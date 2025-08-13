@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { StarRating } from '@/components/star-rating';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, ShieldCheck, Truck, CheckCircle } from 'lucide-react';
+import { ShoppingCart, ShieldCheck, Truck, CheckCircle, Award, HeartHandshake } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
 import { useToast } from "@/hooks/use-toast";
@@ -114,6 +114,28 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               Add to Cart
             </Button>
           </div>
+          
+          <Card className="mt-6">
+            <CardContent className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                 <div className="flex flex-col items-center gap-1">
+                    <Award className="w-7 h-7 text-primary"/>
+                    <p className="text-xs font-medium">Expert-Tested</p>
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                    <ShieldCheck className="w-7 h-7 text-primary"/>
+                    <p className="text-xs font-medium">{product.warranty}</p>
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                    <Truck className="w-7 h-7 text-primary"/>
+                    <p className="text-xs font-medium">Free Shipping</p>
+                 </div>
+                 <div className="flex flex-col items-center gap-1">
+                    <HeartHandshake className="w-7 h-7 text-primary"/>
+                    <p className="text-xs font-medium">30-Day Returns</p>
+                 </div>
+            </CardContent>
+          </Card>
+
         </div>
       </div>
 
@@ -132,6 +154,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <li>{product.name}</li>
                 <li>Charger & Cable</li>
                 <li>Battery</li>
+                <li>User Manual (Digital)</li>
             </ul>
           </TabsContent>
           <TabsContent value="specs" className="mt-6">

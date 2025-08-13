@@ -4,7 +4,7 @@ import { ProductCard } from '@/components/product-card';
 import { products } from '@/lib/mock-data';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Smartphone, Camera, Headphones, ShieldCheck, Package, Smile } from 'lucide-react';
+import { ArrowRight, Smartphone, Camera, Headphones, ShieldCheck, Package, Smile, Award, Truck, HeartHandshake } from 'lucide-react';
 
 const categories = [
   { name: 'DSLR Cameras', icon: Camera, href: '/products?category=dslr' },
@@ -15,17 +15,17 @@ const categories = [
 
 const whyRefocus = [
     {
-        icon: ShieldCheck,
+        icon: Award,
         title: 'Rigorously Tested',
         description: 'Every device undergoes a 52-point inspection to ensure full functionality. We stand by our quality with a 1-year warranty.',
     },
     {
-        icon: Package,
+        icon: Truck,
         title: 'Free & Fast Shipping',
         description: 'Get your gear quickly and safely with our free, tracked shipping on every single order. No minimum purchase required.',
     },
     {
-        icon: Smile,
+        icon: HeartHandshake,
         title: '30-Day Happiness Guarantee',
         description: 'Not the right fit? No problem. Return your item within 30 days for a full refund, no questions asked.',
     },
