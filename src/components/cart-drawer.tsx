@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -7,6 +8,7 @@ import { useCart } from '@/context/cart-context';
 import { ScrollArea } from './ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Trash2, Plus, Minus } from 'lucide-react';
+import Link from 'next/link';
 
 export function CartDrawer({ children }: { children: React.ReactNode }) {
   const { cart, removeItem, updateItemQuantity, isCartOpen, closeCart, openCart } = useCart();
@@ -68,7 +70,9 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
                   <span>Subtotal</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
-                <Button size="lg" className="w-full">Proceed to Checkout</Button>
+                <Button asChild size="lg" className="w-full" onClick={closeCart}>
+                    <Link href="/checkout">Proceed to Checkout</Link>
+                </Button>
               </div>
             </SheetFooter>
           </>
