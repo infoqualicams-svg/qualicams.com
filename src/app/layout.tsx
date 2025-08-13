@@ -27,11 +27,7 @@ export default function RootLayout({
       <body className="font-body antialiased h-full">
         <CartProvider>
           <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-grow">
-              {children}
-            </main>
-            <Footer />
+            {children}
           </div>
           <Toaster />
         </CartProvider>
@@ -39,3 +35,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

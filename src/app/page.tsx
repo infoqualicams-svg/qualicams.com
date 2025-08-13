@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Smartphone, Camera, Headphones, ShieldCheck, Package, Smile, Award, Truck, HeartHandshake } from 'lucide-react';
 import { TestimonialCard } from '@/components/testimonial-card';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 const categories = [
   { name: 'DSLR Cameras', icon: Camera, href: '/products?category=dslr' },
@@ -34,6 +36,9 @@ const whyRefocus = [
 
 export default function Home() {
   return (
+    <>
+    <Header />
+    <main className="flex-grow">
     <div className="flex flex-col bg-background">
       <section className="w-full py-12 md:py-20 lg:py-24">
         <div className="container mx-auto px-4 text-center">
@@ -142,5 +147,10 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </main>
+    <Footer />
+    </>
   );
 }
+
+    

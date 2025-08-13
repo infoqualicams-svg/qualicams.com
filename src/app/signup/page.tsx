@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -8,6 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -27,7 +30,10 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
+    <>
+    <Header/>
+    <main className="flex-grow">
+    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-16rem)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Create an Account</CardTitle>
@@ -89,5 +95,10 @@ export default function SignUpPage() {
         </CardContent>
       </Card>
     </div>
+    </main>
+    <Footer/>
+    </>
   );
 }
+
+    

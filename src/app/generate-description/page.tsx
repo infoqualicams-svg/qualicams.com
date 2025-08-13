@@ -1,8 +1,14 @@
+
 import { DescriptionGeneratorForm } from '@/components/description-generator-form';
+import { Footer } from '@/components/layout/footer';
+import { Header } from '@/components/layout/header';
 import { Sparkles } from 'lucide-react';
 
 export default function GenerateDescriptionPage() {
   return (
+    <>
+    <Header />
+    <main className="flex-grow">
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
@@ -15,5 +21,10 @@ export default function GenerateDescriptionPage() {
         <DescriptionGeneratorForm />
       </div>
     </div>
+    </main>
+    <Footer />
+    </>
   );
 }
+
+    

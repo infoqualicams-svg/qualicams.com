@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -8,6 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email.' }),
@@ -26,7 +29,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
+    <>
+    <Header/>
+    <main className="flex-grow">
+    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-16rem)] py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Welcome Back!</CardTitle>
@@ -75,5 +81,10 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+    </main>
+    <Footer/>
+    </>
   );
 }
+
+    

@@ -1,8 +1,14 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 export default function AccountPage() {
   return (
+    <>
+    <Header/>
+    <main className="flex-grow">
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <header className="mb-8">
@@ -55,5 +61,10 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
+    </main>
+    <Footer/>
+    </>
   );
 }
+
+    
