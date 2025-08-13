@@ -62,8 +62,8 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     }, [query]);
 
     return (
-        <form onSubmit={handleSearch} className="relative flex-1">
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <form onSubmit={handleSearch} className="relative flex-1">
                 <PopoverAnchor asChild>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -101,8 +101,8 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
                         </div>
                     </PopoverContent>
                 )}
-            </Popover>
-        </form>
+            </form>
+        </Popover>
     )
 }
 
@@ -118,20 +118,11 @@ export function Header() {
           <span className="hidden sm:inline">ReFocus</span>
         </Link>
         
-        <div className="hidden md:block w-full max-w-sm">
+        <div className="hidden md:block w-full max-w-md mx-auto">
           <SearchInput />
         </div>
 
-
-        <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium ml-auto">
-          {navLinks.map(link => (
-             <Link key={link.href} href={link.href} className="transition-colors hover:text-primary">
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-2 ml-auto md:ml-0">
+        <div className="flex items-center gap-2 ml-auto">
            <CartDrawer>
              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
@@ -175,6 +166,15 @@ export function Header() {
           </Sheet>
         </div>
       </div>
+      <nav className="hidden lg:flex items-center justify-center space-x-8 text-sm font-medium border-t bg-card">
+          <div className="container mx-auto px-4 h-12 flex items-center justify-center gap-8">
+            {navLinks.map(link => (
+             <Link key={link.href} href={link.href} className="transition-colors hover:text-primary">
+              {link.label}
+            </Link>
+            ))}
+          </div>
+      </nav>
     </header>
   );
 }
