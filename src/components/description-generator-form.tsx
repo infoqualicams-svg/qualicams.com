@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -51,10 +52,6 @@ export function DescriptionGeneratorForm() {
     try {
       const result = await generateProductDescription(values);
       setDescription(result.productDescription);
-      toast({
-        title: "Description Generated!",
-        description: "Your new product description is ready.",
-      });
     } catch (error) {
       console.error('Failed to generate description:', error);
       toast({

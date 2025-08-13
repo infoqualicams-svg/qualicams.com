@@ -16,7 +16,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingCart, ShieldCheck, Truck, CheckCircle, Award, HeartHandshake } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
-import { useToast } from "@/hooks/use-toast";
 import React from 'react';
 
 const VisaIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -36,7 +35,6 @@ const PayPalIcon = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const { toast } = useToast();
   const { addItem } = useCart();
   const product = products.find((p) => p.id === React.use(params).id);
 
@@ -47,10 +45,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const handleAddToCart = () => {
     if (product) {
       addItem(product);
-      toast({
-        title: "Added to cart",
-        description: `${product.name} is now in your cart.`,
-      });
     }
   };
 
