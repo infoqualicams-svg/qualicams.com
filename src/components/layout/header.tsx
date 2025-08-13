@@ -11,7 +11,7 @@ import { CartDrawer } from "@/components/cart-drawer";
 import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { products } from "@/lib/mock-data";
 import Image from "next/image";
 
@@ -64,7 +64,7 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     return (
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverAnchor asChild>
-                <form onSubmit={handleSearch} className="relative flex-1">
+                 <form onSubmit={handleSearch} className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                       ref={inputRef}

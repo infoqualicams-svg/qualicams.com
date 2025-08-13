@@ -30,37 +30,59 @@ const allConditions = ['Excellent', 'Good', 'Fair'];
 function ProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialSearchQuery = searchParams.get('q') || '';
-  const initialCategory = searchParams.get('category') || '';
-
-  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
-  const [filters, setFilters] = useState({
-    categories: initialCategory ? [initialCategory] : [] as string[],
-    brands: [] as string[],
-    conditions: [] as string[],
-    priceRange: [0, 3000] as [number, number],
-  });
-  const [sortBy, setSortBy] = useState('featured');
   
+  // We'll use a local state for the search query input that is separate from the URL query param
+  // for a better user experience while typing.
+  const [searchQueryInput, setSearchQueryInput] = useState(searchParams.get('q') || '');
+  const [filters, setFilters] = useState({
+    categories: searchParams.getAll('category') || [],
+    brands: searchParams.getAll('brand') || [],
+    conditions: searchParams.getAll('condition') || [],
+    priceRange: [
+        Number(searchParams.get('minPrice')) || 0,
+        Number(searchParams.get('maxPrice')) || 3000
+    ] as [number, number],
+  });
+  const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'featured');
+  
+  // This effect synchronizes the component's state with the URL's search parameters.
+  // This is important for handling browser back/forward navigation and direct URL loads.
   useEffect(() => {
-    setSearchQuery(searchParams.get('q') || '');
-    setFilters(prev => ({...prev, categories: searchParams.get('category') ? [searchParams.get('category')!] : []}));
+    setSearchQueryInput(searchParams.get('q') || '');
+    setFilters({
+      categories: searchParams.getAll('category') || [],
+      brands: searchParams.getAll('brand') || [],
+      conditions: searchParams.getAll('condition') || [],
+      priceRange: [
+        Number(searchParams.get('minPrice')) || 0,
+        Number(searchParams.get('maxPrice')) || 3000
+      ],
+    });
+    setSortBy(searchParams.get('sortBy') || 'featured');
   }, [searchParams]);
 
+  const updateUrlParams = (newFilters: any, newSortBy: string, newSearchQuery: string) => {
+    const params = new URLSearchParams();
+    if (newSearchQuery) params.set('q', newSearchQuery);
+    newFilters.categories.forEach((c: string) => params.append('category', c));
+    newFilters.brands.forEach((b: string) => params.append('brand', b));
+    newFilters.conditions.forEach((c: string) => params.append('condition', c));
+    if (newFilters.priceRange[0] > 0) params.set('minPrice', newFilters.priceRange[0].toString());
+    if (newFilters.priceRange[1] < 3000) params.set('maxPrice', newFilters.priceRange[1].toString());
+    if (newSortBy !== 'featured') params.set('sortBy', newSortBy);
+    
+    router.push(`/products?${params.toString()}`);
+  };
+
+
   const handleFilterChange = (type: 'categories' | 'brands' | 'conditions', value: string, checked: boolean) => {
-    setFilters(prev => {
-      const newValues = checked
-        ? [...prev[type], value]
-        : prev[type].filter((v: string) => v !== value);
-      
-      const newParams = new URLSearchParams(searchParams.toString());
-      newParams.delete(type);
-      newValues.forEach(val => newParams.append(type, val));
-      
-      // router.push(`/products?${newParams.toString()}`);
-      
-      return { ...prev, [type]: newValues };
-    });
+    const newValues = checked
+      ? [...filters[type], value]
+      : filters[type].filter((v: string) => v !== value);
+    
+    const newFilters = { ...filters, [type]: newValues };
+    setFilters(newFilters);
+    // updateUrlParams(newFilters, sortBy, searchQueryInput);
   };
 
   const handlePriceChange = (value: number[]) => {
@@ -68,17 +90,22 @@ function ProductsPageContent() {
   }
   
   const clearFilters = () => {
-    setFilters({
+    const defaultFilters = {
         categories: [],
         brands: [],
         conditions: [],
-        priceRange: [0, 3000],
-    });
-    setSearchQuery('');
+        priceRange: [0, 3000] as [number, number],
+    };
+    setFilters(defaultFilters);
+    setSearchQueryInput('');
+    setSortBy('featured');
     router.push('/products');
   }
 
   const filteredAndSortedProducts = useMemo(() => {
+    // We use the URL's search param for filtering, not the live input state
+    const currentSearchQuery = searchParams.get('q') || '';
+
     let filtered = allProducts.filter(product => {
       const { categories, brands, conditions, priceRange } = filters;
       
@@ -87,11 +114,11 @@ function ProductsPageContent() {
       const conditionMatch = conditions.length === 0 || conditions.includes(product.condition);
       const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
 
-      const searchMatch = searchQuery.length === 0 ||
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchMatch = currentSearchQuery.length === 0 ||
+        product.name.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+        product.brand.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(currentSearchQuery.toLowerCase());
 
       return categoryMatch && brandMatch && conditionMatch && priceMatch && searchMatch;
     });
@@ -113,7 +140,9 @@ function ProductsPageContent() {
     }
 
     return filtered;
-  }, [filters, sortBy, searchQuery]);
+  }, [filters, sortBy, searchParams]);
+  
+  const currentSearchQuery = searchParams.get('q');
 
   return (
     <>
@@ -122,10 +151,10 @@ function ProductsPageContent() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold font-headline">
-            {initialSearchQuery ? `Search Results for "${initialSearchQuery}"` : "All Products" }
+            {currentSearchQuery ? `Search Results for "${currentSearchQuery}"` : "All Products" }
           </h1>
           <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-             {initialSearchQuery ? `We found ${filteredAndSortedProducts.length} items for you!` : `Browse our full collection of professionally refurbished cameras. Each one comes with our seal of approval and a warranty to give you peace of mind.`}
+             {currentSearchQuery ? `We found ${filteredAndSortedProducts.length} items for you!` : `Browse our full collection of professionally refurbished cameras. Each one comes with our seal of approval and a warranty to give you peace of mind.`}
           </p>
         </div>
         
