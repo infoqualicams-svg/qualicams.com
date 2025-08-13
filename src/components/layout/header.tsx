@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -8,6 +9,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/context/cart-context";
 import { CartDrawer } from "@/components/cart-drawer";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 const navLinks = [
   { href: "/products?category=dslr", label: "DSLR" },
@@ -16,6 +19,30 @@ const navLinks = [
   { href: "/products?category=accessories", label: "Accessories" },
   { href: "/generate-description", label: "AI Tool" },
 ];
+
+function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
+    const router = useRouter();
+    const [query, setQuery] = React.useState('');
+
+    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (query.trim()) {
+            router.push(`/products?q=${encodeURIComponent(query)}`);
+        }
+    }
+    
+    return (
+        <form onSubmit={handleSearch} className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
+              className="pl-10"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+        </form>
+    )
+}
 
 export function Header() {
   const { cart } = useCart();
@@ -29,12 +56,12 @@ export function Header() {
           <span className="hidden sm:inline">ReFocus</span>
         </Link>
         
-        <div className="relative flex-1 hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search for cameras, lenses, and more" className="pl-10" />
+        <div className="hidden md:block w-full max-w-sm">
+          <SearchInput />
         </div>
 
-        <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium">
+
+        <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium ml-auto">
           {navLinks.map(link => (
              <Link key={link.href} href={link.href} className="transition-colors hover:text-primary">
               {link.label}
@@ -71,9 +98,8 @@ export function Header() {
                         <Camera className="h-6 w-6 text-primary" />
                         ReFocus
                     </Link>
-                    <div className="relative mb-6">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search..." className="pl-10" />
+                    <div className="mb-6">
+                        <SearchInput isMobile />
                     </div>
                     <nav className="flex flex-col space-y-4">
                          {navLinks.map(link => (

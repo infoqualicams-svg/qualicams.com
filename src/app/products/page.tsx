@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductCard } from '@/components/product-card';
 import { products as allProducts } from '@/lib/mock-data';
 import type { Product } from '@/lib/types';
@@ -19,19 +20,35 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 const allCategories = [...new Set(allProducts.map(p => p.category))];
 const allBrands = [...new Set(allProducts.map(p => p.brand))];
 const allConditions = ['Excellent', 'Good', 'Fair'];
 
-export default function ProductsPage() {
+function ProductsPageContent() {
+  const searchParams = useSearchParams();
+  const initialSearchQuery = searchParams.get('q') || '';
+  const initialCategory = searchParams.get('category') || '';
+
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   const [filters, setFilters] = useState({
-    categories: [] as string[],
+    categories: initialCategory ? [initialCategory] : [] as string[],
     brands: [] as string[],
     conditions: [] as string[],
     priceRange: [0, 3000] as [number, number],
   });
   const [sortBy, setSortBy] = useState('featured');
+  
+  useEffect(() => {
+    setSearchQuery(initialSearchQuery);
+  }, [initialSearchQuery]);
+
+  useEffect(() => {
+    setFilters(prev => ({...prev, categories: initialCategory ? [initialCategory] : []}));
+  }, [initialCategory]);
+
 
   const handleCategoryChange = (category: string, checked: boolean) => {
     setFilters(prev => ({
@@ -63,6 +80,16 @@ export default function ProductsPage() {
   const handlePriceChange = (value: number[]) => {
       setFilters(prev => ({ ...prev, priceRange: value as [number, number]}));
   }
+  
+  const clearFilters = () => {
+    setFilters({
+        categories: [],
+        brands: [],
+        conditions: [],
+        priceRange: [0, 3000],
+    });
+    setSearchQuery('');
+  }
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = allProducts.filter(product => {
@@ -73,7 +100,13 @@ export default function ProductsPage() {
       const conditionMatch = conditions.length === 0 || conditions.includes(product.condition);
       const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
 
-      return categoryMatch && brandMatch && conditionMatch && priceMatch;
+      const searchMatch = searchQuery.length === 0 ||
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return categoryMatch && brandMatch && conditionMatch && priceMatch && searchMatch;
     });
 
     switch (sortBy) {
@@ -92,7 +125,7 @@ export default function ProductsPage() {
     }
 
     return filtered;
-  }, [filters, sortBy]);
+  }, [filters, sortBy, searchQuery]);
 
   return (
     <>
@@ -109,17 +142,28 @@ export default function ProductsPage() {
         <div className="grid md:grid-cols-4 gap-8">
           <aside className="md:col-span-1">
              <Card>
-               <CardContent className="p-6 space-y-6">
+               <CardContent className="p-4 space-y-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search in products..." 
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                 
                   <div>
-                    <h3 className="font-semibold mb-4">Category</h3>
+                    <h3 className="font-semibold mb-4 text-sm">Category</h3>
                     <div className="space-y-2">
                       {allCategories.map(category => (
                           <div key={category} className="flex items-center space-x-2">
                               <Checkbox 
                                   id={`cat-${category}`} 
+                                  checked={filters.categories.includes(category)}
                                   onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
                               />
-                              <Label htmlFor={`cat-${category}`} className="font-normal capitalize">{category}</Label>
+                              <Label htmlFor={`cat-${category}`} className="font-normal capitalize text-sm">{category}</Label>
                           </div>
                       ))}
                     </div>
@@ -128,15 +172,16 @@ export default function ProductsPage() {
                   <Separator />
 
                   <div>
-                    <h3 className="font-semibold mb-4">Brand</h3>
+                    <h3 className="font-semibold mb-4 text-sm">Brand</h3>
                     <div className="space-y-2">
                       {allBrands.map(brand => (
                           <div key={brand} className="flex items-center space-x-2">
                               <Checkbox 
                                   id={`brand-${brand}`}
+                                  checked={filters.brands.includes(brand)}
                                   onCheckedChange={(checked) => handleBrandChange(brand, !!checked)}
                               />
-                              <Label htmlFor={`brand-${brand}`} className="font-normal">{brand}</Label>
+                              <Label htmlFor={`brand-${brand}`} className="font-normal text-sm">{brand}</Label>
                           </div>
                       ))}
                     </div>
@@ -145,9 +190,9 @@ export default function ProductsPage() {
                   <Separator />
                   
                   <div>
-                      <h3 className="font-semibold mb-4">Price Range</h3>
+                      <h3 className="font-semibold mb-4 text-sm">Price Range</h3>
                       <Slider
-                          defaultValue={filters.priceRange}
+                          value={filters.priceRange}
                           max={3000}
                           step={100}
                           onValueChange={handlePriceChange}
@@ -161,19 +206,22 @@ export default function ProductsPage() {
                   <Separator />
 
                    <div>
-                    <h3 className="font-semibold mb-4">Condition</h3>
+                    <h3 className="font-semibold mb-4 text-sm">Condition</h3>
                     <div className="space-y-2">
                       {allConditions.map(condition => (
                           <div key={condition} className="flex items-center space-x-2">
                               <Checkbox 
                                   id={`cond-${condition}`} 
+                                  checked={filters.conditions.includes(condition)}
                                   onCheckedChange={(checked) => handleConditionChange(condition, !!checked)}
                               />
-                              <Label htmlFor={`cond-${condition}`} className="font-normal">{condition}</Label>
+                              <Label htmlFor={`cond-${condition}`} className="font-normal text-sm">{condition}</Label>
                           </div>
                       ))}
                     </div>
                   </div>
+                  <Separator/>
+                   <Button variant="ghost" onClick={clearFilters} className="w-full">Clear All Filters</Button>
                </CardContent>
              </Card>
           </aside>
@@ -201,7 +249,8 @@ export default function ProductsPage() {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
-                      <p className="text-muted-foreground">No products match the selected filters.</p>
+                      <p className="text-muted-foreground">No products match your search or filters.</p>
+                      <Button variant="link" onClick={clearFilters}>Clear filters and search</Button>
                   </div>
                 )}
               </div>
@@ -214,4 +263,11 @@ export default function ProductsPage() {
   );
 }
 
-    
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ProductsPageContent />
+        </Suspense>
+    )
+}
