@@ -9,11 +9,19 @@ import { Separator } from './ui/separator';
 import { Trash2, Plus, Minus } from 'lucide-react';
 
 export function CartDrawer({ children }: { children: React.ReactNode }) {
-  const { cart, removeItem, updateItemQuantity } = useCart();
+  const { cart, removeItem, updateItemQuantity, isCartOpen, closeCart, openCart } = useCart();
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      openCart();
+    } else {
+      closeCart();
+    }
+  };
+
   return (
-    <Sheet>
+    <Sheet open={isCartOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="flex flex-col">
         <SheetHeader>

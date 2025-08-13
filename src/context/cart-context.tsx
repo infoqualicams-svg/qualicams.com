@@ -9,6 +9,9 @@ interface CartItem extends Product {
 
 interface CartContextType {
   cart: CartItem[];
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateItemQuantity: (productId: string, quantity: number) => void;
@@ -19,6 +22,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
 
   const addItem = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
@@ -30,6 +37,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prevCart, { ...product, quantity }];
     });
+    openCart();
   };
 
   const removeItem = (productId: string) => {
@@ -53,7 +61,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addItem, removeItem, updateItemQuantity, clearCart }}>
+    <CartContext.Provider value={{ cart, isCartOpen, openCart, closeCart, addItem, removeItem, updateItemQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
