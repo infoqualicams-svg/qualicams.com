@@ -60,14 +60,14 @@ export default function Home() {
         </div>
       </section>
       
-       <section className="w-full py-12 md:py-16 bg-card">
+       <section className="w-full py-12 md:py-16 bg-muted/50">
         <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">Shop by Category</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
                 {categories.map((category) => (
-                  <Link href={category.href} key={category.name}>
-                    <Card className="flex flex-col items-center justify-center p-4 h-full text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                      <category.icon className="h-10 w-10 text-primary mb-3" />
+                  <Link href={category.href} key={category.name} className="group">
+                    <Card className="flex flex-col items-center justify-center p-4 h-full text-center transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 border-transparent hover:border-primary/20 bg-card">
+                      <category.icon className="h-10 w-10 text-primary mb-3 transition-transform duration-300 group-hover:scale-110" />
                       <span className="font-semibold text-base">{category.name}</span>
                     </Card>
                   </Link>
@@ -92,20 +92,20 @@ export default function Home() {
         </div>
       </section>
       
-       <section className="w-full py-12 md:py-20 bg-card">
+       <section className="w-full py-12 md:py-20 bg-muted/50">
          <div className="container mx-auto px-4">
-           <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">Why ReFocus?</h2>
+           <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">Why ReFocus?</h2>
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 {whyRefocus.map((item) => (
-                    <div key={item.title} className="text-center">
+                    <Card key={item.title} className="text-center p-6 border-2 border-transparent hover:border-primary/20 hover:shadow-lg transition-all duration-300">
                         <div className="flex justify-center items-center mb-4">
                             <div className="bg-primary/10 text-primary rounded-full p-4">
                                 <item.icon className="w-8 h-8"/>
                             </div>
                         </div>
-                        <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                        <h3 className="text-xl font-bold mb-2 font-headline">{item.title}</h3>
                         <p className="text-muted-foreground">{item.description}</p>
-                    </div>
+                    </Card>
                 ))}
             </div>
         </div>
@@ -113,7 +113,7 @@ export default function Home() {
 
       <section className="w-full py-12 md:py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">What Our Customers Say</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-12">What Our Customers Say</h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} />
@@ -124,20 +124,21 @@ export default function Home() {
 
        <section className="w-full py-12 md:py-20">
         <div className="container mx-auto px-4">
-           <div className="relative w-full h-[40vh] text-white rounded-lg overflow-hidden">
+           <div className="relative w-full h-[40vh] text-white rounded-lg overflow-hidden group">
                 <Image
                   src="https://placehold.co/1200x400.png"
                   alt="A person holding a vintage camera"
                   layout="fill"
                   objectFit="cover"
-                  className="brightness-75"
+                  className="brightness-50 group-hover:brightness-75 transition-all duration-500"
                   data-ai-hint="person camera"
                 />
-                <div className="relative z-10 flex flex-col items-start justify-center h-full p-8 md:p-12">
-                  <h2 className="text-3xl md:text-4xl font-bold font-headline text-white">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="relative z-10 flex flex-col items-start justify-end h-full p-8 md:p-12">
+                  <h2 className="text-3xl md:text-4xl font-bold font-headline text-white drop-shadow-md">
                     Give Your Gear a Second Life
                   </h2>
-                  <p className="mt-2 text-lg max-w-md text-gray-200">
+                  <p className="mt-2 text-lg max-w-md text-gray-200 drop-shadow-sm">
                     Get a competitive offer for your used electronics and turn them into cash. It's smart, simple, and sustainable.
                   </p>
                   <Button size="lg" className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90" asChild>

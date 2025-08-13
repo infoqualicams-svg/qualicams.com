@@ -70,45 +70,45 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
 
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <form onSubmit={handleSearch}>
+        <form onSubmit={handleSearch} className="relative">
             <PopoverAnchor asChild>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        ref={inputRef}
-                        placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
-                        className="pl-10"
-                        value={query}
-                        onChange={handleQueryChange}
-                        onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
-                    />
-                </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    ref={inputRef}
+                    placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
+                    className="pl-10"
+                    value={query}
+                    onChange={handleQueryChange}
+                    onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
+                />
+              </div>
             </PopoverAnchor>
+             {searchResults.length > 0 && (
+                <PopoverContent 
+                    className="p-1 w-[var(--radix-popover-trigger-width)]"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col gap-1">
+                        {searchResults.map(product => (
+                            <Link 
+                                key={product.id} 
+                                href={`/products/${product.id}`}
+                                className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
+                                onClick={() => setIsPopoverOpen(false)}
+                            >
+                                <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium">{product.name}</p>
+                                    <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
+                                </div>
+                                <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
+                            </Link>
+                        ))}
+                    </div>
+                </PopoverContent>
+            )}
         </form>
-        {searchResults.length > 0 && (
-            <PopoverContent 
-                className="p-1 w-[var(--radix-popover-trigger-width)]"
-                onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-                <div className="flex flex-col gap-1">
-                    {searchResults.map(product => (
-                        <Link 
-                            key={product.id} 
-                            href={`/products/${product.id}`}
-                            className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
-                            onClick={() => setIsPopoverOpen(false)}
-                        >
-                            <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
-                            <div className="flex-1">
-                                <p className="text-sm font-medium">{product.name}</p>
-                                <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
-                            </div>
-                            <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
-                        </Link>
-                    ))}
-                </div>
-            </PopoverContent>
-        )}
       </Popover>
     )
 }
@@ -188,7 +188,7 @@ export function Header() {
           </Sheet>
         </div>
       </div>
-      <nav className="hidden lg:flex items-center justify-center space-x-8 text-sm font-medium border-t bg-card">
+      <nav className="hidden lg:flex items-center justify-center space-x-8 text-sm font-medium border-t bg-card/95 backdrop-blur-sm">
           <div className="container mx-auto px-4 h-12 flex items-center justify-center gap-8">
             {navLinks.map(link => (
              <Link key={link.href} href={link.href} className="transition-colors hover:text-primary">
