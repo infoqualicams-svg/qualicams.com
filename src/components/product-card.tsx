@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className="mt-2 text-xl font-bold">${product.price.toFixed(2)}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <Button asChild className="w-full">
+        <Button asChild className="w-full" variant="outline">
           <Link href={`/products/${product.id}`}>View Details</Link>
         </Button>
       </CardFooter>

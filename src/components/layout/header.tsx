@@ -53,9 +53,9 @@ export function Header() {
               </Button>
            </CartDrawer>
           <Button asChild variant="ghost" size="icon">
-            <Link href="/login">
+            <Link href="/account">
               <User className="h-5 w-5" />
-              <span className="sr-only">Login</span>
+              <span className="sr-only">Account</span>
             </Link>
           </Button>
           <Sheet>

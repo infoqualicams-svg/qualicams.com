@@ -38,23 +38,23 @@ export default function Home() {
       <section className="w-full py-12 md:py-20 lg:py-24">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold font-headline text-gray-800">
-            Tech, Reimagined.
+            Find your focus, for less.
           </h1>
           <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-            Discover premium refurbished electronics, from cameras to laptops. Expertly restored for you, and for the planet.
+            Discover premium refurbished cameras, lenses, and accessories. Expertly restored for you, and for the planet.
           </p>
            <div className="mt-8 flex justify-center gap-4">
              <Button asChild size="lg">
-              <Link href="/products">Shop All</Link>
+              <Link href="/products">Shop All Products</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="/sell">Sell Your Gear</Link>
+              <Link href="#">Sell Your Gear</Link>
             </Button>
           </div>
         </div>
       </section>
       
-       <section className="w-full py-12 md:py-16 bg-muted">
+       <section className="w-full py-12 md:py-16 bg-card">
         <div className="container mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">Shop by Category</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto">
@@ -86,7 +86,7 @@ export default function Home() {
         </div>
       </section>
       
-       <section className="w-full py-12 md:py-20 bg-muted">
+       <section className="w-full py-12 md:py-20 bg-card">
          <div className="container mx-auto px-4">
            <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">Why ReFocus?</h2>
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -134,7 +134,7 @@ export default function Home() {
                   <p className="mt-2 text-lg max-w-md text-gray-200">
                     Get a competitive offer for your used electronics and turn them into cash. It's smart, simple, and sustainable.
                   </p>
-                  <Button size="lg" className="mt-6 bg-white text-gray-900 hover:bg-gray-200">
+                  <Button size="lg" className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                     Get an Offer
                   </Button>
                 </div>
