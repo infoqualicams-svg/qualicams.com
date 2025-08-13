@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { ProductCard } from '@/components/product-card';
 import { products as allProducts } from '@/lib/mock-data';
 import type { Product } from '@/lib/types';
@@ -28,6 +28,7 @@ const allBrands = [...new Set(allProducts.map(p => p.brand))];
 const allConditions = ['Excellent', 'Good', 'Fair'];
 
 function ProductsPageContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialSearchQuery = searchParams.get('q') || '';
   const initialCategory = searchParams.get('category') || '';
@@ -42,41 +43,26 @@ function ProductsPageContent() {
   const [sortBy, setSortBy] = useState('featured');
   
   useEffect(() => {
-    setSearchQuery(initialSearchQuery);
-  }, [initialSearchQuery]);
+    setSearchQuery(searchParams.get('q') || '');
+    setFilters(prev => ({...prev, categories: searchParams.get('category') ? [searchParams.get('category')!] : []}));
+  }, [searchParams]);
 
-  useEffect(() => {
-    setFilters(prev => ({...prev, categories: initialCategory ? [initialCategory] : []}));
-  }, [initialCategory]);
-
-
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    setFilters(prev => ({
-      ...prev,
-      categories: checked
-        ? [...prev.categories, category]
-        : prev.categories.filter(c => c !== category),
-    }));
+  const handleFilterChange = (type: 'categories' | 'brands' | 'conditions', value: string, checked: boolean) => {
+    setFilters(prev => {
+      const newValues = checked
+        ? [...prev[type], value]
+        : prev[type].filter((v: string) => v !== value);
+      
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.delete(type);
+      newValues.forEach(val => newParams.append(type, val));
+      
+      // router.push(`/products?${newParams.toString()}`);
+      
+      return { ...prev, [type]: newValues };
+    });
   };
 
-  const handleBrandChange = (brand: string, checked: boolean) => {
-    setFilters(prev => ({
-      ...prev,
-      brands: checked
-        ? [...prev.brands, brand]
-        : prev.brands.filter(b => b !== brand),
-    }));
-  };
-
-  const handleConditionChange = (condition: string, checked: boolean) => {
-    setFilters(prev => ({
-      ...prev,
-      conditions: checked
-        ? [...prev.conditions, condition]
-        : prev.conditions.filter(c => c !== condition),
-    }));
-  };
-  
   const handlePriceChange = (value: number[]) => {
       setFilters(prev => ({ ...prev, priceRange: value as [number, number]}));
   }
@@ -89,6 +75,7 @@ function ProductsPageContent() {
         priceRange: [0, 3000],
     });
     setSearchQuery('');
+    router.push('/products');
   }
 
   const filteredAndSortedProducts = useMemo(() => {
@@ -121,6 +108,7 @@ function ProductsPageContent() {
             break;
         case 'featured':
         default:
+            // Assuming 'featured' is the default order from mock-data
             break;
     }
 
@@ -133,9 +121,11 @@ function ProductsPageContent() {
       <main className="flex-grow">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold font-headline">All Products</h1>
+          <h1 className="text-4xl md:text-5xl font-bold font-headline">
+            {initialSearchQuery ? `Search Results for "${initialSearchQuery}"` : "All Products" }
+          </h1>
           <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-            Browse our full collection of professionally refurbished cameras. Each one comes with our seal of approval and a warranty to give you peace of mind.
+             {initialSearchQuery ? `We found ${filteredAndSortedProducts.length} items for you!` : `Browse our full collection of professionally refurbished cameras. Each one comes with our seal of approval and a warranty to give you peace of mind.`}
           </p>
         </div>
         
@@ -143,17 +133,7 @@ function ProductsPageContent() {
           <aside className="md:col-span-1">
              <Card>
                <CardContent className="p-4 space-y-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    placeholder="Search in products..." 
-                    className="pl-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                 
-                  <div>
+                 <div>
                     <h3 className="font-semibold mb-4 text-sm">Category</h3>
                     <div className="space-y-2">
                       {allCategories.map(category => (
@@ -161,7 +141,7 @@ function ProductsPageContent() {
                               <Checkbox 
                                   id={`cat-${category}`} 
                                   checked={filters.categories.includes(category)}
-                                  onCheckedChange={(checked) => handleCategoryChange(category, !!checked)}
+                                  onCheckedChange={(checked) => handleFilterChange('categories', category, !!checked)}
                               />
                               <Label htmlFor={`cat-${category}`} className="font-normal capitalize text-sm">{category}</Label>
                           </div>
@@ -179,7 +159,7 @@ function ProductsPageContent() {
                               <Checkbox 
                                   id={`brand-${brand}`}
                                   checked={filters.brands.includes(brand)}
-                                  onCheckedChange={(checked) => handleBrandChange(brand, !!checked)}
+                                  onCheckedChange={(checked) => handleFilterChange('brands', brand, !!checked)}
                               />
                               <Label htmlFor={`brand-${brand}`} className="font-normal text-sm">{brand}</Label>
                           </div>
@@ -213,7 +193,7 @@ function ProductsPageContent() {
                               <Checkbox 
                                   id={`cond-${condition}`} 
                                   checked={filters.conditions.includes(condition)}
-                                  onCheckedChange={(checked) => handleConditionChange(condition, !!checked)}
+                                  onCheckedChange={(checked) => handleFilterChange('conditions', condition, !!checked)}
                               />
                               <Label htmlFor={`cond-${condition}`} className="font-normal text-sm">{condition}</Label>
                           </div>

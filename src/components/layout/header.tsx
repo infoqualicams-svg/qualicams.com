@@ -10,7 +10,10 @@ import { useCart } from "@/context/cart-context";
 import { CartDrawer } from "@/components/cart-drawer";
 import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
+import { products } from "@/lib/mock-data";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/products?category=dslr", label: "DSLR" },
@@ -24,27 +27,80 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get('q') || '';
-    const [query, setQuery] = React.useState(initialQuery);
+    const [query, setQuery] = useState(initialQuery);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
       setQuery(initialQuery);
     }, [initialQuery]);
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (query.trim() === '') return;
+        setIsPopoverOpen(false);
+        inputRef.current?.blur();
         router.push(`/products?q=${encodeURIComponent(query)}`);
     }
+
+    const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newQuery = e.target.value;
+        setQuery(newQuery);
+        if (newQuery.trim().length > 1) {
+          setIsPopoverOpen(true);
+        } else {
+          setIsPopoverOpen(false);
+        }
+    }
     
+    const searchResults = useMemo(() => {
+        if (query.length < 2) return [];
+        const lowerCaseQuery = query.toLowerCase();
+        return products
+          .filter(p => p.name.toLowerCase().includes(lowerCaseQuery) || p.brand.toLowerCase().includes(lowerCaseQuery))
+          .slice(0, 5);
+    }, [query]);
+
     return (
-        <form onSubmit={handleSearch} className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
-              className="pl-10"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-        </form>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverAnchor asChild>
+                <form onSubmit={handleSearch} className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      ref={inputRef}
+                      placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
+                      className="pl-10"
+                      value={query}
+                      onChange={handleQueryChange}
+                      onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
+                    />
+                </form>
+            </PopoverAnchor>
+            {searchResults.length > 0 && (
+                <PopoverContent 
+                    className="p-1 w-[var(--radix-popover-trigger-width)]"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col gap-1">
+                        {searchResults.map(product => (
+                            <Link 
+                                key={product.id} 
+                                href={`/products/${product.id}`}
+                                className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
+                                onClick={() => setIsPopoverOpen(false)}
+                            >
+                                <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium">{product.name}</p>
+                                    <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
+                                </div>
+                                <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
+                            </Link>
+                        ))}
+                    </div>
+                </PopoverContent>
+            )}
+        </Popover>
     )
 }
 
@@ -73,7 +129,7 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto md:ml-0">
            <CartDrawer>
              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
@@ -102,7 +158,7 @@ export function Header() {
                         <Camera className="h-6 w-6 text-primary" />
                         ReFocus
                     </Link>
-                    <div className="mb-6">
+                    <div className="mb-6 md:hidden">
                         <SearchInput isMobile />
                     </div>
                     <nav className="flex flex-col space-y-4">
