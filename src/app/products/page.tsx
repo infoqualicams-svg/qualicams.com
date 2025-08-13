@@ -31,9 +31,6 @@ function ProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // We'll use a local state for the search query input that is separate from the URL query param
-  // for a better user experience while typing.
-  const [searchQueryInput, setSearchQueryInput] = useState(searchParams.get('q') || '');
   const [filters, setFilters] = useState({
     categories: searchParams.getAll('category') || [],
     brands: searchParams.getAll('brand') || [],
@@ -48,7 +45,6 @@ function ProductsPageContent() {
   // This effect synchronizes the component's state with the URL's search parameters.
   // This is important for handling browser back/forward navigation and direct URL loads.
   useEffect(() => {
-    setSearchQueryInput(searchParams.get('q') || '');
     setFilters({
       categories: searchParams.getAll('category') || [],
       brands: searchParams.getAll('brand') || [],
@@ -61,15 +57,39 @@ function ProductsPageContent() {
     setSortBy(searchParams.get('sortBy') || 'featured');
   }, [searchParams]);
 
-  const updateUrlParams = (newFilters: any, newSortBy: string, newSearchQuery: string) => {
-    const params = new URLSearchParams();
-    if (newSearchQuery) params.set('q', newSearchQuery);
+  const updateUrlParams = (newFilters: any, newSortBy: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Update categories
+    params.delete('category');
     newFilters.categories.forEach((c: string) => params.append('category', c));
+    
+    // Update brands
+    params.delete('brand');
     newFilters.brands.forEach((b: string) => params.append('brand', b));
+
+    // Update conditions
+    params.delete('condition');
     newFilters.conditions.forEach((c: string) => params.append('condition', c));
-    if (newFilters.priceRange[0] > 0) params.set('minPrice', newFilters.priceRange[0].toString());
-    if (newFilters.priceRange[1] < 3000) params.set('maxPrice', newFilters.priceRange[1].toString());
-    if (newSortBy !== 'featured') params.set('sortBy', newSortBy);
+
+    // Update price range
+    if (newFilters.priceRange[0] > 0) {
+      params.set('minPrice', newFilters.priceRange[0].toString());
+    } else {
+      params.delete('minPrice');
+    }
+    if (newFilters.priceRange[1] < 3000) {
+      params.set('maxPrice', newFilters.priceRange[1].toString());
+    } else {
+      params.delete('maxPrice');
+    }
+
+    // Update sort
+    if (newSortBy !== 'featured') {
+      params.set('sortBy', newSortBy);
+    } else {
+      params.delete('sortBy');
+    }
     
     router.push(`/products?${params.toString()}`);
   };
@@ -82,13 +102,16 @@ function ProductsPageContent() {
     
     const newFilters = { ...filters, [type]: newValues };
     setFilters(newFilters);
-    // updateUrlParams(newFilters, sortBy, searchQueryInput);
   };
 
   const handlePriceChange = (value: number[]) => {
       setFilters(prev => ({ ...prev, priceRange: value as [number, number]}));
   }
   
+  const applyFilters = () => {
+    updateUrlParams(filters, sortBy);
+  }
+
   const clearFilters = () => {
     const defaultFilters = {
         categories: [],
@@ -97,22 +120,24 @@ function ProductsPageContent() {
         priceRange: [0, 3000] as [number, number],
     };
     setFilters(defaultFilters);
-    setSearchQueryInput('');
     setSortBy('featured');
     router.push('/products');
   }
 
   const filteredAndSortedProducts = useMemo(() => {
-    // We use the URL's search param for filtering, not the live input state
     const currentSearchQuery = searchParams.get('q') || '';
+    const currentCategories = searchParams.getAll('category');
+    const currentBrands = searchParams.getAll('brand');
+    const currentConditions = searchParams.getAll('condition');
+    const minPrice = Number(searchParams.get('minPrice')) || 0;
+    const maxPrice = Number(searchParams.get('maxPrice')) || 3000;
+    const currentSortBy = searchParams.get('sortBy') || 'featured';
 
     let filtered = allProducts.filter(product => {
-      const { categories, brands, conditions, priceRange } = filters;
-      
-      const categoryMatch = categories.length === 0 || categories.includes(product.category);
-      const brandMatch = brands.length === 0 || brands.includes(product.brand);
-      const conditionMatch = conditions.length === 0 || conditions.includes(product.condition);
-      const priceMatch = product.price >= priceRange[0] && product.price <= priceRange[1];
+      const categoryMatch = currentCategories.length === 0 || currentCategories.includes(product.category);
+      const brandMatch = currentBrands.length === 0 || currentBrands.includes(product.brand);
+      const conditionMatch = currentConditions.length === 0 || currentConditions.includes(product.condition);
+      const priceMatch = product.price >= minPrice && product.price <= maxPrice;
 
       const searchMatch = currentSearchQuery.length === 0 ||
         product.name.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
@@ -123,7 +148,7 @@ function ProductsPageContent() {
       return categoryMatch && brandMatch && conditionMatch && priceMatch && searchMatch;
     });
 
-    switch (sortBy) {
+    switch (currentSortBy) {
         case 'price-asc':
             filtered.sort((a, b) => a.price - b.price);
             break;
@@ -140,9 +165,14 @@ function ProductsPageContent() {
     }
 
     return filtered;
-  }, [filters, sortBy, searchParams]);
+  }, [searchParams]);
   
   const currentSearchQuery = searchParams.get('q');
+  
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    updateUrlParams(filters, value);
+  };
 
   return (
     <>
@@ -230,7 +260,10 @@ function ProductsPageContent() {
                     </div>
                   </div>
                   <Separator/>
-                   <Button variant="ghost" onClick={clearFilters} className="w-full">Clear All Filters</Button>
+                   <div className="flex flex-col gap-2">
+                       <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
+                       <Button variant="ghost" onClick={clearFilters} className="w-full">Clear All Filters</Button>
+                   </div>
                </CardContent>
              </Card>
           </aside>
@@ -238,7 +271,7 @@ function ProductsPageContent() {
           <main className="md:col-span-3">
               <div className="flex justify-between items-center mb-6">
                   <p className="text-sm text-muted-foreground">{filteredAndSortedProducts.length} products found</p>
-                  <Select value={sortBy} onValueChange={setSortBy}>
+                  <Select value={sortBy} onValueChange={handleSortChange}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
@@ -258,8 +291,8 @@ function ProductsPageContent() {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
-                      <p className="text-muted-foreground">No products match your search or filters.</p>
-                      <Button variant="link" onClick={clearFilters}>Clear filters and search</Button>
+                      <p className="text-muted-foreground">No products match your filters.</p>
+                      <Button variant="link" onClick={clearFilters}>Clear filters</Button>
                   </div>
                 )}
               </div>

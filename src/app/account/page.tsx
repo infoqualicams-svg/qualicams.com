@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import Link from "next/link";
 
 export default function AccountPage() {
   return (
@@ -24,7 +25,9 @@ export default function AccountPage() {
                 <CardDescription>You have not placed any orders yet.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button>Start Shopping</Button>
+                <Button asChild>
+                  <Link href="/products">Start Shopping</Link>
+                </Button>
               </CardContent>
             </Card>
              <Card>
@@ -41,7 +44,9 @@ export default function AccountPage() {
                     <h4 className="font-semibold">Email</h4>
                     <p className="text-muted-foreground">john.doe@example.com</p>
                  </div>
-                 <Button variant="outline">Edit Profile</Button>
+                 <Button variant="outline" asChild>
+                    <Link href="/account/profile">Edit Profile</Link>
+                 </Button>
               </CardContent>
             </Card>
           </div>
@@ -51,9 +56,9 @@ export default function AccountPage() {
                 <CardTitle>Actions</CardTitle>
               </CardHeader>
                <CardContent className="flex flex-col space-y-2">
-                 <Button variant="ghost" className="justify-start">Order History</Button>
-                 <Button variant="ghost" className="justify-start">Manage Addresses</Button>
-                 <Button variant="ghost" className="justify-start">Payment Methods</Button>
+                 <Button variant="ghost" className="justify-start" asChild><Link href="/account/orders">Order History</Link></Button>
+                 <Button variant="ghost" className="justify-start" asChild><Link href="/account/addresses">Manage Addresses</Link></Button>
+                 <Button variant="ghost" className="justify-start" asChild><Link href="/account/payment-methods">Payment Methods</Link></Button>
                  <Button variant="destructive" className="justify-start">Log Out</Button>
               </CardContent>
             </Card>
@@ -66,5 +71,3 @@ export default function AccountPage() {
     </>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/product-card';
@@ -53,7 +54,7 @@ export default function Home() {
               <Link href="/products">Shop All Products</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="#">Sell Your Gear</Link>
+              <Link href="/sell">Sell Your Gear</Link>
             </Button>
           </div>
         </div>
@@ -139,8 +140,8 @@ export default function Home() {
                   <p className="mt-2 text-lg max-w-md text-gray-200">
                     Get a competitive offer for your used electronics and turn them into cash. It's smart, simple, and sustainable.
                   </p>
-                  <Button size="lg" className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
-                    Get an Offer
+                  <Button size="lg" className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90" asChild>
+                    <Link href="/sell">Get an Offer</Link>
                   </Button>
                 </div>
               </div>
@@ -152,5 +153,3 @@ export default function Home() {
     </>
   );
 }
-
-    
