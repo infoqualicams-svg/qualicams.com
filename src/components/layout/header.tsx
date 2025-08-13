@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCart } from "@/context/cart-context";
 import { CartDrawer } from "@/components/cart-drawer";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 
 const navLinks = [
@@ -22,13 +22,17 @@ const navLinks = [
 
 function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     const router = useRouter();
-    const [query, setQuery] = React.useState('');
+    const searchParams = useSearchParams();
+    const initialQuery = searchParams.get('q') || '';
+    const [query, setQuery] = React.useState(initialQuery);
+
+    React.useEffect(() => {
+      setQuery(initialQuery);
+    }, [initialQuery]);
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (query.trim()) {
-            router.push(`/products?q=${encodeURIComponent(query)}`);
-        }
+        router.push(`/products?q=${encodeURIComponent(query)}`);
     }
     
     return (
