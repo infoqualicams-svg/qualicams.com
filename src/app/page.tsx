@@ -5,15 +5,15 @@ import { ProductCard } from '@/components/product-card';
 import { products, testimonials } from '@/lib/mock-data';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Smartphone, Camera, Headphones, ShieldCheck, Package, Smile, Award, Truck, HeartHandshake } from 'lucide-react';
+import { ArrowRight, Smartphone, Camera, Headphones, ShieldCheck, Package, Smile, Award, Truck, HeartHandshake, Video, Aperture } from 'lucide-react';
 import { TestimonialCard } from '@/components/testimonial-card';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 
 const categories = [
-  { name: 'DSLR Cameras', icon: Camera, href: '/products?category=dslr' },
-  { name: 'Mirrorless Cameras', icon: Camera, href: '/products?category=mirrorless' },
-  { name: 'Lenses', icon: Smartphone, href: '/products?category=lenses' }, // Placeholder icon
+  { name: 'All Compacts', icon: Camera, href: '/products?category=compact' },
+  { name: 'Vlogging Cameras', icon: Video, href: '/products' }, // Assuming no specific category, link to all
+  { name: 'Street Cameras', icon: Aperture, href: '/products' },
   { name: 'Accessories', icon: Headphones, href: '/products?category=accessories' },
 ];
 

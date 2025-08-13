@@ -1,3 +1,4 @@
+
 export interface Review {
   id: string;
   author: string;
@@ -10,7 +11,7 @@ export interface Product {
   id: string;
   name: string;
   brand: string;
-  category: 'dslr' | 'mirrorless' | 'lenses' | 'accessories';
+  category: 'dslr' | 'mirrorless' | 'lenses' | 'accessories' | 'compact';
   price: number;
   images: string[];
   imageHints: string[];

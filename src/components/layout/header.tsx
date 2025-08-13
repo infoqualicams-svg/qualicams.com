@@ -11,7 +11,7 @@ import { CartDrawer } from "@/components/cart-drawer";
 import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,10 +22,11 @@ import { products } from "@/lib/mock-data";
 import Image from "next/image";
 
 const navLinks = [
-  { href: "/products?category=dslr", label: "DSLR" },
-  { href: "/products?category=mirrorless", label: "Mirrorless" },
-  { href: "/products?category=lenses", label: "Lenses" },
-  { href: "/products?category=accessories", label: "Accessories" },
+  { href: "/products?brand=Sony", label: "Sony" },
+  { href: "/products?brand=Canon", label: "Canon" },
+  { href: "/products?brand=Fujifilm", label: "Fujifilm" },
+  { href: "/products?brand=Panasonic", label: "Panasonic" },
+  { href: "/products?brand=Ricoh", label: "Ricoh" },
   { href: "/generate-description", label: "AI Tool" },
 ];
 
@@ -68,8 +69,8 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     }, [query]);
 
     return (
-      <form onSubmit={handleSearch}>
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <form onSubmit={handleSearch}>
             <PopoverAnchor asChild>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -83,32 +84,32 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
                     />
                 </div>
             </PopoverAnchor>
-            {searchResults.length > 0 && (
-                <PopoverContent 
-                    className="p-1 w-[var(--radix-popover-trigger-width)]"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                    <div className="flex flex-col gap-1">
-                        {searchResults.map(product => (
-                            <Link 
-                                key={product.id} 
-                                href={`/products/${product.id}`}
-                                className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
-                                onClick={() => setIsPopoverOpen(false)}
-                            >
-                                <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
-                                </div>
-                                <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
-                            </Link>
-                        ))}
-                    </div>
-                </PopoverContent>
-            )}
-        </Popover>
-      </form>
+        </form>
+        {searchResults.length > 0 && (
+            <PopoverContent 
+                className="p-1 w-[var(--radix-popover-trigger-width)]"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+                <div className="flex flex-col gap-1">
+                    {searchResults.map(product => (
+                        <Link 
+                            key={product.id} 
+                            href={`/products/${product.id}`}
+                            className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
+                            onClick={() => setIsPopoverOpen(false)}
+                        >
+                            <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium">{product.name}</p>
+                                <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
+                            </div>
+                            <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
+                        </Link>
+                    ))}
+                </div>
+            </PopoverContent>
+        )}
+      </Popover>
     )
 }
 
