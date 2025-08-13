@@ -5,6 +5,9 @@ import { Camera, Search, ShoppingCart, Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useCart } from "@/context/cart-context";
+import { CartDrawer } from "@/components/cart-drawer";
+import { Badge } from "@/components/ui/badge";
 
 const navLinks = [
   { href: "/products?category=dslr", label: "DSLR" },
@@ -15,6 +18,9 @@ const navLinks = [
 ];
 
 export function Header() {
+  const { cart } = useCart();
+  const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container mx-auto flex h-16 items-center px-4 gap-6">
@@ -37,13 +43,20 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-           <Button variant="ghost" size="icon">
-            <ShoppingCart className="h-5 w-5" />
-            <span className="sr-only">Shopping Cart</span>
-          </Button>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-            <span className="sr-only">Login</span>
+           <CartDrawer>
+             <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0">{itemCount}</Badge>
+                )}
+                <span className="sr-only">Shopping Cart</span>
+              </Button>
+           </CartDrawer>
+          <Button asChild variant="ghost" size="icon">
+            <Link href="/login">
+              <User className="h-5 w-5" />
+              <span className="sr-only">Login</span>
+            </Link>
           </Button>
           <Sheet>
             <SheetTrigger asChild>

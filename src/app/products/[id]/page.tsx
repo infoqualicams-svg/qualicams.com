@@ -1,3 +1,5 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { products } from '@/lib/mock-data';
@@ -10,15 +12,29 @@ import { Separator } from '@/components/ui/separator';
 import { StarRating } from '@/components/star-rating';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, ShieldCheck, Zap, Truck, CheckCircle } from 'lucide-react';
+import { ShoppingCart, ShieldCheck, Truck, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useCart } from '@/context/cart-context';
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const { toast } = useToast();
+  const { addItem } = useCart();
   const product = products.find((p) => p.id === params.id);
 
   if (!product) {
     notFound();
   }
+
+  const handleAddToCart = () => {
+    if (product) {
+      addItem(product);
+      toast({
+        title: "Added to cart",
+        description: `${product.name} is now in your cart.`,
+      });
+    }
+  };
 
   const getConditionClass = (condition: string) => {
     switch (condition) {
@@ -93,7 +109,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           </div>
 
           <div className="mt-8">
-            <Button size="lg" className="w-full text-lg py-6">
+            <Button size="lg" className="w-full text-lg py-6" onClick={handleAddToCart}>
               <ShoppingCart className="mr-2 h-5 w-5" />
               Add to Cart
             </Button>
