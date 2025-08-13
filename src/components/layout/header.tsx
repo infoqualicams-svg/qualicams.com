@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { Camera, Search, ShoppingCart, Menu, User } from "lucide-react";
+import { Camera, Search, ShoppingCart, Menu, User, LifeBuoy, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -12,6 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { products } from "@/lib/mock-data";
 import Image from "next/image";
 
@@ -62,47 +68,47 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     }, [query]);
 
     return (
+      <form onSubmit={handleSearch}>
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-            <form onSubmit={handleSearch} className="relative flex-1">
-                <PopoverAnchor asChild>
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            ref={inputRef}
-                            placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
-                            className="pl-10"
-                            value={query}
-                            onChange={handleQueryChange}
-                            onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
-                        />
+            <PopoverAnchor asChild>
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        ref={inputRef}
+                        placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
+                        className="pl-10"
+                        value={query}
+                        onChange={handleQueryChange}
+                        onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
+                    />
+                </div>
+            </PopoverAnchor>
+            {searchResults.length > 0 && (
+                <PopoverContent 
+                    className="p-1 w-[var(--radix-popover-trigger-width)]"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col gap-1">
+                        {searchResults.map(product => (
+                            <Link 
+                                key={product.id} 
+                                href={`/products/${product.id}`}
+                                className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
+                                onClick={() => setIsPopoverOpen(false)}
+                            >
+                                <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium">{product.name}</p>
+                                    <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
+                                </div>
+                                <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
+                            </Link>
+                        ))}
                     </div>
-                </PopoverAnchor>
-                {searchResults.length > 0 && (
-                    <PopoverContent 
-                        className="p-1 w-[var(--radix-popover-trigger-width)]"
-                        onOpenAutoFocus={(e) => e.preventDefault()}
-                    >
-                        <div className="flex flex-col gap-1">
-                            {searchResults.map(product => (
-                                <Link 
-                                    key={product.id} 
-                                    href={`/products/${product.id}`}
-                                    className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
-                                    onClick={() => setIsPopoverOpen(false)}
-                                >
-                                    <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium">{product.name}</p>
-                                        <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
-                                    </div>
-                                    <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
-                                </Link>
-                            ))}
-                        </div>
-                    </PopoverContent>
-                )}
-            </form>
+                </PopoverContent>
+            )}
         </Popover>
+      </form>
     )
 }
 
@@ -123,6 +129,21 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+               <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+                 <LifeBuoy className="h-5 w-5 mr-2"/>
+                 Need Help?
+                 <ChevronDown className="h-4 w-4 ml-1"/>
+               </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild><Link href="/contact">Contact Us</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/faq">FAQ</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/returns">Returns</Link></DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
            <CartDrawer>
              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
