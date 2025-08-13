@@ -9,6 +9,8 @@ export interface Review {
 export interface Product {
   id: string;
   name: string;
+  brand: string;
+  category: 'dslr' | 'mirrorless' | 'lenses' | 'accessories';
   price: number;
   images: string[];
   imageHints: string[];
