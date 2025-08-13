@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/product-card';
-import { products } from '@/lib/mock-data';
+import { products, testimonials } from '@/lib/mock-data';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Smartphone, Camera, Headphones, ShieldCheck, Package, Smile, Award, Truck, HeartHandshake } from 'lucide-react';
+import { TestimonialCard } from '@/components/testimonial-card';
 
 const categories = [
   { name: 'DSLR Cameras', icon: Camera, href: '/products?category=dslr' },
@@ -101,6 +102,17 @@ export default function Home() {
                     </div>
                 ))}
             </div>
+        </div>
+      </section>
+
+      <section className="w-full py-12 md:py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold font-headline text-center mb-10">What Our Customers Say</h2>
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+            ))}
+          </div>
         </div>
       </section>
 

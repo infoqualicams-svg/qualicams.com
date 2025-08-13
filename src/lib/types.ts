@@ -23,3 +23,13 @@ export interface Product {
   reviewCount: number;
   reviews: Review[];
 }
+
+export interface Testimonial {
+    id: string;
+    quote: string;
+    author: string;
+    location: string;
+    rating: number;
+    image: string;
+    imageHint: string;
+}

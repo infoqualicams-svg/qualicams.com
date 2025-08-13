@@ -1,4 +1,4 @@
-import type { Product } from './types';
+import type { Product, Review, Testimonial } from './types';
 
 export const products: Product[] = [
   {
@@ -155,4 +155,34 @@ export const products: Product[] = [
     reviewCount: 45,
     reviews: [],
   },
+];
+
+export const testimonials: Testimonial[] = [
+    {
+        id: 't1',
+        quote: 'My camera arrived looking brand new, and the customer service was fantastic. I\'m so impressed with the quality and the price. Will definitely be coming back for my next lens!',
+        author: 'Sarah J.',
+        location: 'New York, NY',
+        rating: 5,
+        image: 'https://placehold.co/100x100.png',
+        imageHint: 'happy customer'
+    },
+    {
+        id: 't2',
+        quote: 'I was hesitant about buying refurbished, but ReFocus changed my mind. The gear is top-notch, and their 1-year warranty gave me total peace of mind. Highly recommended.',
+        author: 'Mike R.',
+        location: 'Austin, TX',
+        rating: 5,
+        image: 'https://placehold.co/100x100.png',
+        imageHint: 'customer portrait'
+    },
+    {
+        id: 't3',
+        quote: 'The whole process was smooth, from finding the right camera to the super-fast shipping. The condition was exactly as described. It\'s a sustainable and smart way to buy tech.',
+        author: 'Chloe B.',
+        location: 'San Francisco, CA',
+        rating: 5,
+        image: 'https://placehold.co/100x100.png',
+        imageHint: 'woman smiling'
+    }
 ];
