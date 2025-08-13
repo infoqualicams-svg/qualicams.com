@@ -62,45 +62,47 @@ function SearchInput({ isMobile = false }: { isMobile?: boolean}) {
     }, [query]);
 
     return (
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-            <PopoverAnchor asChild>
-                 <form onSubmit={handleSearch} className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      ref={inputRef}
-                      placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
-                      className="pl-10"
-                      value={query}
-                      onChange={handleQueryChange}
-                      onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
-                    />
-                </form>
-            </PopoverAnchor>
-            {searchResults.length > 0 && (
-                <PopoverContent 
-                    className="p-1 w-[var(--radix-popover-trigger-width)]"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                >
-                    <div className="flex flex-col gap-1">
-                        {searchResults.map(product => (
-                            <Link 
-                                key={product.id} 
-                                href={`/products/${product.id}`}
-                                className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
-                                onClick={() => setIsPopoverOpen(false)}
-                            >
-                                <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">{product.name}</p>
-                                    <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
-                                </div>
-                                <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
-                            </Link>
-                        ))}
+        <form onSubmit={handleSearch} className="relative flex-1">
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverAnchor asChild>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                            ref={inputRef}
+                            placeholder={isMobile ? "Search..." : "Search for cameras, lenses, and more"}
+                            className="pl-10"
+                            value={query}
+                            onChange={handleQueryChange}
+                            onFocus={() => query.length > 1 && setIsPopoverOpen(true)}
+                        />
                     </div>
-                </PopoverContent>
-            )}
-        </Popover>
+                </PopoverAnchor>
+                {searchResults.length > 0 && (
+                    <PopoverContent 
+                        className="p-1 w-[var(--radix-popover-trigger-width)]"
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                    >
+                        <div className="flex flex-col gap-1">
+                            {searchResults.map(product => (
+                                <Link 
+                                    key={product.id} 
+                                    href={`/products/${product.id}`}
+                                    className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
+                                    onClick={() => setIsPopoverOpen(false)}
+                                >
+                                    <Image src={product.images[0]} alt={product.name} width={40} height={40} className="rounded-sm object-cover" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium">{product.name}</p>
+                                        <p className="text-xs text-muted-foreground capitalize">{product.category}</p>
+                                    </div>
+                                    <p className="text-sm font-semibold">${product.price.toFixed(2)}</p>
+                                </Link>
+                            ))}
+                        </div>
+                    </PopoverContent>
+                )}
+            </Popover>
+        </form>
     )
 }
 
