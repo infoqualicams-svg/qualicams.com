@@ -6,18 +6,21 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "functions": {
+    "source": ".",
+    "runtime": "nodejs20"
+  },
   "hosting": {
-    "public": "out",
+    "public": ".next/static",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**",
-      "**/.next/**"
+      "**/node_modules/**"
     ],
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "function": "nextjsFunc"
       }
     ],
     "headers": [
