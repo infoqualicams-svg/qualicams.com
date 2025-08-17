@@ -13,9 +13,12 @@ export default function CheckoutLayout({
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                      <div className="flex">
-                        <Link href="/" className="flex items-center gap-2 font-bold text-xl font-headline">
-                          <Camera className="h-6 w-6 text-primary" />
-                          ReFocus
+                        <Link href="/" className="flex items-center">
+                          <img 
+                            src="/QualiCams.svg" 
+                            alt="QualiCams Logo" 
+                            className="h-10 w-auto"
+                          />
                         </Link>
                      </div>
                 </div>

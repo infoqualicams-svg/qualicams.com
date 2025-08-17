@@ -19,8 +19,8 @@ export default function OrdersPage() {
                 &larr; Back to Account
             </Link>
          </div>
-        <h1 className="text-3xl font-bold font-headline mb-6">Order History</h1>
-        <Card>
+        <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight mb-6">Order History</h1>
+        <Card className="rounded-xl">
           <CardHeader>
             <CardDescription>You have not placed any orders yet.</CardDescription>
           </CardHeader>

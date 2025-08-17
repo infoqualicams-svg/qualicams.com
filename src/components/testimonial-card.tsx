@@ -11,9 +11,9 @@ interface TestimonialCardProps {
 
 export function TestimonialCard({ testimonial }: TestimonialCardProps) {
   return (
-    <Card className="flex flex-col justify-between p-6">
+    <Card className="flex flex-col justify-between p-6 rounded-xl">
         <CardContent className="p-0">
-            <Quote className="w-8 h-8 text-primary/50 mb-4" />
+            <Quote className="w-8 h-8 text-black/30 mb-4" />
             <p className="text-muted-foreground mb-4 italic">"{testimonial.quote}"</p>
             <StarRating rating={testimonial.rating} />
         </CardContent>

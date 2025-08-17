@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read access to all files
+    match /{allPaths=**} {
+      allow read;
+    }
+    
+    // Allow write access to product images
+    match /products/{imageId} {
+      allow write: if request.resource.size < 5 * 1024 * 1024 // 5MB limit
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Allow test uploads
+    match /test/{testId} {
+      allow write;
+    }
+  }
+}

@@ -11,46 +11,47 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const getConditionClass = (condition: string) => {
-    switch (condition) {
-        case 'Excellent': return 'bg-green-100 text-green-800';
-        case 'Good': return 'bg-blue-100 text-blue-800';
-        case 'Fair': return 'bg-yellow-100 text-yellow-800';
-        default: return 'bg-gray-100 text-gray-800';
-    }
-  }
-  
   return (
-    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group border border-gray-200 hover:border-black rounded-xl">
       <CardHeader className="p-0">
-        <Link href={`/products/${product.id}`} className="block relative aspect-square w-full overflow-hidden rounded-t-lg">
+        <Link href={`/products/${product.id}`} className="block relative aspect-square w-full overflow-hidden">
           <Image
-            src={product.images[0]}
+            src={product.images?.[0] || 'https://placehold.co/600x600.png'}
             alt={`Image of ${product.name}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint={product.imageHints[0]}
+            data-ai-hint={product.imageHints?.[0] || 'camera equipment'}
           />
+          <div className="absolute top-4 left-4">
+            <Badge className="bg-green-600 text-white font-bold uppercase tracking-wide text-xs shadow-lg">
+              REFURBISHED
+            </Badge>
+          </div>
         </Link>
       </CardHeader>
-      <CardContent className="flex-grow p-4">
-        <div className="flex justify-between items-center mb-2">
-            <Badge variant="outline" className={`font-medium border-0 ${getConditionClass(product.condition)}`}>
-              {product.condition}
-            </Badge>
+      <CardContent className="flex-grow p-6">
+        <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-1">
               <StarRating rating={product.rating} starClassName="w-3.5 h-3.5" />
-              <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
+              <span className="text-xs text-gray-500 ml-1">({product.reviewCount})</span>
             </div>
         </div>
-        <CardTitle className="mt-1 text-base font-headline h-10 hover:text-primary">
+        <CardTitle className="text-xl font-bold font-headline tracking-tight mb-2 hover:text-black transition-colors">
           <Link href={`/products/${product.id}`}>{product.name}</Link>
         </CardTitle>
-        <p className="mt-2 text-xl font-bold">${product.price.toFixed(2)}</p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-bold text-black">${product.price.toFixed(2)}</p>
+            <p className="text-lg text-gray-500 line-through">${(product.price * 1.2).toFixed(2)}</p>
+          </div>
+          <p className="text-sm text-green-600 font-medium">
+            Save ${((product.price * 1.2) - product.price).toFixed(2)} ({Math.round(((product.price * 1.2 - product.price) / (product.price * 1.2)) * 100)}% off)
+          </p>
+        </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Button asChild className="w-full" variant="outline">
-          <Link href={`/products/${product.id}`}>View Details</Link>
+      <CardFooter className="p-6 pt-0">
+        <Button asChild className="w-full border-black text-black hover:bg-black hover:text-white transition-colors font-semibold rounded-xl" variant="outline">
+          <Link href={`/products/${product.id}`}>VIEW DETAILS</Link>
         </Button>
       </CardFooter>
     </Card>

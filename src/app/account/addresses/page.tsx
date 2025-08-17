@@ -19,15 +19,15 @@ export default function AddressesPage() {
             </Link>
          </div>
          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold font-headline">Manage Addresses</h1>
+            <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight">Manage Addresses</h1>
             <Button>Add New Address</Button>
          </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg">Default Shipping Address</CardTitle>
-                </CardHeader>
+                    <Card className="rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-lg">Default Shipping Address</CardTitle>
+          </CardHeader>
                 <CardContent>
                     <p>John Doe</p>
                     <p>123 Main St</p>

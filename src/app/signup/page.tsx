@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -19,14 +22,34 @@ const formSchema = z.object({
 });
 
 export default function SignUpPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const { user, signUp } = useAuth();
+  const router = useRouter();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.push('/account');
+    }
+  }, [user, router]);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { name: '', email: '', password: '' },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Handle signup logic here
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      await signUp(values.email, values.password, values.name);
+      // Redirect to account page
+      router.push('/account');
+    } catch (error) {
+      // Error handling is done in the AuthContext
+      console.error('Signup error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -34,10 +57,10 @@ export default function SignUpPage() {
     <Header/>
     <main className="flex-grow">
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-16rem)] py-12">
-      <Card className="w-full max-w-md">
+              <Card className="w-full max-w-md rounded-xl">
         <CardHeader className="text-center">
           <CardTitle>Create an Account</CardTitle>
-          <CardDescription>Get started with ReFocus today</CardDescription>
+          <CardDescription>Get started with QualiCams today</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -81,13 +104,15 @@ export default function SignUpPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Create Account</Button>
+                              <Button type="submit" className="w-full rounded-xl" disabled={isLoading}>
+                {isLoading ? 'Creating Account...' : 'Create Account'}
+              </Button>
             </form>
           </Form>
            <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Already have an account?{' '}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-black hover:underline font-semibold">
                 Sign in
               </Link>
             </p>

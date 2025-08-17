@@ -5,9 +5,10 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from '@/context/cart-context';
+import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
-  title: 'ReFocus - Refurbished Cameras',
+  title: 'QualiCams - Refurbished Cameras',
   description: 'Your one-stop shop for high-quality refurbished cameras.',
 };
 
@@ -25,12 +26,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased h-full">
-        <CartProvider>
-          <div className="flex flex-col min-h-screen">
-            {children}
-          </div>
-          <Toaster />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <div className="flex flex-col min-h-screen">
+              {children}
+            </div>
+            <Toaster />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

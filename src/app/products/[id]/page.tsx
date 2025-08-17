@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { products } from '@/lib/mock-data';
+import { getProductById, getAllProducts } from '@/lib/firebase-products';
 import type { Product } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,32 +14,54 @@ import { Separator } from '@/components/ui/separator';
 import { StarRating } from '@/components/star-rating';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ShoppingCart, ShieldCheck, Truck, CheckCircle, Award, HeartHandshake } from 'lucide-react';
+import { ShoppingCart, ShieldCheck, Truck, CheckCircle, Award, HeartHandshake, Package, Lock, Smartphone, Headphones, Video, Recycle, Aperture } from 'lucide-react';
 import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
 import React from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { PaymentIcons } from '@/components/ui/payment-icons';
 
-const VisaIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="38" height="24" viewBox="0 0 38 24" {...props}><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#3A424A" /><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#FFF" /><path d="M12.9 6.6c0-.5-.3-.8-.8-.8H8.3c-.4 0-.7.3-.7.6 0 .2.1.4.3.5l2.1 2.4-2.5 4.3c-.2.3-.2.5 0 .6.1.1.3.2.5.2h1.4c.4 0 .7-.2.9-.6l1.2-2.3 1.1-2.2c-.1-.1-.1-.2-.1-.4zm-3.9 5.2l-1.1-2h-.1l-1.7 3.5c-.1.3-.4.5-.7.5H4c-.5 0-.8-.3-.8-.7s.3-.8.8-.8l1.4-.2c.5 0 .8-.3.9-1l1.5-6.4c.1-.5.5-.8 1-.8h2.9c.5 0 .8.3.8.8s-.3.8-.8.8H9.3l-1.1 4.7h.1l1.7-2.3c.1-.2.2-.4.2-.6 0-.5-.3-.8-.8-.8H7.4c-.4 0-.7.3-.7.6s.3.8.8.8l.6.1.3 1.2zM22.6 6.6c0-.5-.3-.8-.8-.8h-3.4c-.5 0-.8.3-.8.8s.3.8.8.8h.9l-2.2 6.8c-.1.4-.4.6-.8.6H15c-.5 0-.8.3-.8.8s.3.8.8.8h3.4c.5 0 .8-.3.8-.8s-.3-.8-.8-.8h-.9l2.2-6.8c.1-.4.4-.6.8-.6h1.4c.5 0 .8-.3.8-.8zM31.2 6.6c0-.5-.3-.8-.8-.8H27c-.5 0-.8.3-.8.8s.3.8.8.8h.7l-1.3 3.4-1.6-3.4H24c-.5 0-.8.3-.8.8s.3.8.8.8h.6l1.5 3.4-1.5 3.4h-.6c-.5 0-.8.3-.8.8s.3.8.8.8h2.8c.5 0 .8-.3.8-.8l-.1-1.2.6-1.2c.2-.4.2-.6 0-.8l-1.5-2.8 1.9-4h.6c.5 0 .8-.3.8-.8z" fill="#1A1F71" /></svg>
-)
 
-const MastercardIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="38" height="24" viewBox="0 0 38 24" {...props}><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#3A424A"/><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#FFF"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M22 12c0 4.1-2.9 7-6.9 7h-1.2c-3.7 0-6.8-2.6-6.8-6.3 0-3.3 2.4-6.3 6.1-6.3h1.8C19.1 6.4 22 8.9 22 12z" fill="#FF5F00"/></svg>
-)
 
-const AmexIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="38" height="24" viewBox="0 0 38 24" {...props}><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#3A424A"/><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#006FCF"/><path fill="#FFF" d="M12.9 8.2H9.8v1.8h2.8v1.7H9.8v2.1h3.1v1.8H8V6.4h4.9zM15.3 15.6h1.8V8.1h-1.8zM20.6 8.2h-1.7l-2.1 7.4h1.8l.3-1.3h2.3l.3 1.3h1.8l-2.1-7.4zm-.2 4.5h-1.3l.6-2.6zM29.2 11.2c0-1.8-1.2-2.9-3.2-2.9h-3.4v7.4h1.8v-2.7h1.2l1.6 2.7h2l-2-3.1c.9-.3 1.2-1 1.2-1.8zm-3.2-.8h-1.6v-1.3h1.6c.7 0 1.1.3 1.1.8s-.4.5-1.1.5z"/></svg>
-)
-
-const PayPalIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="38" height="24" viewBox="0 0 38 24" {...props}><path d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z" fill="#3A424A"/><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32" fill="#FFF"/><path d="M24.4 8.7c.2-1.5-1-2.6-2.5-2.6H17l-.8 4.9c0 .4.2.7.6.7h2.8l-.4 2.3c-.1.4-.5.7-.9.7h-1.9c-.4 0-.7.3-.8.7l-.4 2.3c-.1.4.2.7.6.7h2.2c1.5 0 2.7-1.2 2.7-2.7 0-.4-.1-.8-.2-1.2l.2-1c.1-.5.6-1 1.1-1h.8c.6 0 1.1-.5 1.1-1.1l.1-1.2s0-.1 0 0z" fill="#009CDE"/><path d="M23.1 8.2c0-.3-.2-.5-.4-.5h-1c-.8 0-1.4.6-1.5 1.4l-.4 2.3c0 .3.2.5.4.5h1.7c.8 0 1.4-.6 1.5-1.4l.2-1.2s0-.1 0-.1zm-1.8 5.9c-.1 0-.1-.1-.1-.1l.3-1.8c0-.3.3-.5.5-.5h.3c.6 0 1 .4 1 1l-.2 1.2c-.1.6-.6 1.1-1.2 1.1h-.6zM28.3 8.3c-.2-1.5-1.5-2.5-3-2.5h-5.4l-.8 4.9c0 .4.2.7.6.7h2.8l-.4 2.3c-.1.4-.5.7-.9.7H19c-.4 0-.7.3-.8.7l-.4 2.3c-.1.4.2.7.6.7h2.2c1.5 0 2.7-1.2 2.7-2.7 0-.4-.1-.8-.2-1.2l.2-1c.1-.5.6-1 1.1-1h.8c.6 0 1.1-.5 1.1-1.1l.1-1.2z" fill="#003087"/></svg>
-)
-
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { addItem } = useCart();
-  const product = products.find((p) => p.id === React.use(params).id);
+  const [product, setProduct] = React.useState<Product | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const resolvedParams = React.use(params);
+  
+  React.useEffect(() => {
+    const loadProduct = async () => {
+      setLoading(true);
+      try {
+        const fetchedProduct = await getProductById(resolvedParams.id);
+        setProduct(fetchedProduct);
+        
+        if (!fetchedProduct) {
+          notFound();
+        }
+      } catch (error) {
+        console.error('Error loading product:', error);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProduct();
+  }, [resolvedParams.id]);
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Loading product...</p>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   if (!product) {
     notFound();
@@ -51,183 +74,802 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   };
 
   const getConditionClass = (condition: string) => {
-    switch (condition) {
-        case 'Excellent': return 'bg-green-100 text-green-800 border-green-300';
-        case 'Good': return 'bg-blue-100 text-blue-800 border-blue-300';
-        case 'Fair': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-        default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
+    return 'bg-gray-100 text-black border-gray-300';
   }
 
   return (
     <>
       <Header />
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-sm text-muted-foreground mb-4">
-            <Link href="/" className="hover:text-primary">Home</Link> &gt; <Link href="/products" className="hover:text-primary capitalize">{product.category}</Link> &gt; <span className="font-medium text-foreground">{product.name}</span>
+      <main className="flex-grow bg-white">
+        {/* Breadcrumb */}
+        <div className="border-b border-gray-100">
+          <div className="container mx-auto px-4 py-3">
+            <div className="text-sm text-gray-500">
+              <Link href="/" className="hover:text-black transition-colors">Home</Link> 
+              <span className="mx-2">/</span>
+              <Link href="/products" className="hover:text-black transition-colors capitalize">{product.category}</Link> 
+              <span className="mx-2">/</span>
+              <span className="text-black font-medium">{product.name}</span>
+            </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            <div>
+        </div>
+
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid lg:grid-cols-2 gap-12 xl:gap-16">
+            {/* Product Images */}
+            <div className="space-y-4">
+              <div className="relative">
               <Carousel className="w-full">
                 <CarouselContent>
                   {product.images.map((img, index) => (
                     <CarouselItem key={index}>
-                      <Card className="overflow-hidden rounded-lg">
+                        <div className="relative aspect-square overflow-hidden bg-gray-50 border border-gray-200 rounded-xl">
                         <Image
                           src={img}
                           alt={`${product.name} - Image ${index + 1}`}
-                          width={600}
-                          height={600}
-                          className="w-full h-auto aspect-square object-cover"
+                            fill
+                            className="object-cover"
                           data-ai-hint={product.imageHints[index]}
                         />
-                      </Card>
+                        </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="ml-16" />
-                <CarouselNext className="mr-16" />
+                  <CarouselPrevious className="left-4" />
+                  <CarouselNext className="right-4" />
               </Carousel>
+                
+                {/* Trust badges on image */}
+                <div className="absolute top-4 left-4 space-y-2">
+                  <Badge className="bg-green-600 text-white font-bold uppercase tracking-wide text-xs shadow-lg">
+                    REFURBISHED
+                  </Badge>
+                  <Badge className="bg-white/90 text-gray-600 border border-gray-200 font-light backdrop-blur-sm text-xs">
+                    ✓ Verified
+                  </Badge>
+                </div>
+
+                {/* Stock indicator */}
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-white/90 text-gray-600 border border-gray-200 font-light text-xs">
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-1.5"></div>
+                    In Stock
+                  </Badge>
+                </div>
+              </div>
+              
+              {/* Image thumbnails */}
+              <div className="grid grid-cols-4 gap-2">
+                {product.images.slice(0, 4).map((img, index) => (
+                  <div key={index} className="aspect-square border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:border-black transition-colors">
+                    <Image
+                      src={img}
+                      alt={`${product.name} thumbnail ${index + 1}`}
+                      width={100}
+                      height={100}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="flex flex-col">
-              <h1 className="text-3xl lg:text-4xl font-bold font-headline">{product.name}</h1>
-              <div className="mt-3 flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <StarRating rating={product.rating} />
-                    <a href="#reviews" className="text-sm text-muted-foreground hover:text-primary">{product.reviewCount} reviews</a>
+            {/* Product Info */}
+            <div className="space-y-6">
+              {/* Product Header */}
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-gray-700 text-xs font-medium uppercase tracking-wide rounded-full border border-gray-200">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  Certified Refurbished
                 </div>
-                <Separator orientation="vertical" className="h-4"/>
-                <Badge variant="outline" className={`w-fit font-medium ${getConditionClass(product.condition)}`}>
-                 {product.condition}
-              </Badge>
-              </div>
-              
-              <p className="mt-4 text-muted-foreground">{product.description}</p>
-
-              <p className="text-4xl font-bold mt-6">${product.price.toFixed(2)}</p>
-              
-              <div className="mt-6 space-y-4">
-                  <div className="flex items-start gap-3">
-                      <Truck className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                          <p className="font-semibold">Free & Fast Delivery</p>
-                          <p className="text-sm text-muted-foreground">Get it by tomorrow if you order in the next 4 hours.</p>
-                      </div>
+                
+                <h1 className="text-4xl md:text-5xl font-bold font-headline tracking-tight text-gray-900">{product.name}</h1>
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <StarRating rating={product.rating} starClassName="w-4 h-4" />
+                    <span className="font-medium text-sm">{product.rating}</span>
+                    <a href="#reviews" className="text-gray-500 hover:text-gray-700 transition-colors text-sm">
+                      ({product.reviewCount} reviews)
+                    </a>
                   </div>
-                   <div className="flex items-start gap-3">
-                      <ShieldCheck className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                      <div>
-                          <p className="font-semibold">{product.warranty}</p>
-                          <p className="text-sm text-muted-foreground">Expertly tested, fully functional, and backed by our guarantee.</p>
-                      </div>
-                  </div>
+                </div>
               </div>
 
-              <div className="mt-8">
-                <Button size="lg" className="w-full text-lg py-6" onClick={handleAddToCart}>
+              {/* Price Section */}
+              <div className="space-y-4 border-b border-gray-100 pb-8">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-4xl xl:text-5xl font-extralight text-gray-900">${product.price.toFixed(2)}</span>
+                  <span className="text-lg text-gray-400 line-through">${(product.price * 1.1).toFixed(2)}</span>
+                  <span className="inline-flex items-center px-3 py-1 bg-gray-50 text-gray-700 text-sm font-medium rounded-full border border-gray-200">
+                    Save ${((product.price * 1.1) - product.price).toFixed(0)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Key Features */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold font-headline tracking-tight text-gray-800">Key Benefits</h3>
+                <div className="grid gap-3">
+                  <div className="flex items-start gap-3 p-4 bg-white border border-gray-100 hover:border-gray-200 transition-all duration-200 rounded-xl">
+                    <div className="w-6 h-6 bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 rounded-lg">
+                      <CheckCircle className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Best Price Quality Ratio</p>
+                      <p className="text-sm text-gray-500 mt-1">Premium performance at a fraction of retail price</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-white border border-gray-100 hover:border-gray-200 transition-all duration-200 rounded-xl">
+                    <div className="w-6 h-6 bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 rounded-lg">
+                      <ShieldCheck className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">{product.warranty} Comprehensive Warranty</p>
+                      <p className="text-sm text-gray-500 mt-1">Full coverage for peace of mind</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-white border border-gray-100 hover:border-gray-200 transition-all duration-200 rounded-xl">
+                    <div className="w-6 h-6 bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 rounded-lg">
+                      <Truck className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">Daily Fresh Inventory</p>
+                      <p className="text-sm text-gray-500 mt-1">New refurbished cameras added every day</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Urgency Section */}
+              <div className="bg-gray-50 border border-gray-200 text-gray-700 p-4 rounded-xl">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <span className="font-medium text-sm">Limited Stock</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Only 3 units remaining at this price
+                </p>
+              </div>
+
+              {/* CTA Section */}
+              <div className="space-y-4 border-t border-gray-100 pt-8">
+                <Button 
+                  size="lg" 
+                  className="w-full h-14 text-lg font-medium bg-black text-white hover:bg-gray-900 transition-all duration-200 rounded-xl" 
+                  onClick={handleAddToCart}
+                >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart
+                  Add to Cart • ${product.price.toFixed(2)}
                 </Button>
-              </div>
-               <div className="mt-4 flex items-center justify-center gap-2">
-                  <VisaIcon />
-                  <MastercardIcon />
-                  <AmexIcon />
-                  <PayPalIcon />
-              </div>
-              
-              <Card className="mt-6 bg-muted">
-                <CardContent className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                     <div className="flex flex-col items-center gap-1">
-                        <Award className="w-7 h-7 text-primary"/>
-                        <p className="text-xs font-medium">Expert-Tested</p>
-                     </div>
-                     <div className="flex flex-col items-center gap-1">
-                        <ShieldCheck className="w-7 h-7 text-primary"/>
-                        <p className="text-xs font-medium">{product.warranty}</p>
-                     </div>
-                     <div className="flex flex-col items-center gap-1">
-                        <Truck className="w-7 h-7 text-primary"/>
-                        <p className="text-xs font-medium">Free Shipping</p>
-                     </div>
-                     <div className="flex flex-col items-center gap-1">
-                        <HeartHandshake className="w-7 h-7 text-primary"/>
-                        <p className="text-xs font-medium">30-Day Returns</p>
-                     </div>
-                </CardContent>
-              </Card>
 
+                {/* Payment methods */}
+                <div className="text-center space-y-3 bg-white p-4 border border-gray-100 rounded-xl">
+                  <p className="text-sm font-light text-gray-600">Secure Payment</p>
+                  <PaymentIcons className="flex items-center justify-center gap-2" iconClassName="opacity-60" />
+                  <p className="text-xs text-gray-400">SSL encrypted • PCI compliant</p>
+                </div>
+              </div>
+
+              {/* Trust indicators */}
+              <div className="bg-white border border-gray-100 p-6 space-y-6 rounded-xl">
+                <h4 className="text-xl font-bold font-headline tracking-tight text-center text-gray-700">QualiCams Guarantee</h4>
+                <div className="grid grid-cols-3 gap-6 text-center">
+                  <div className="space-y-3">
+                    <div className="w-8 h-8 mx-auto bg-white border border-gray-200 flex items-center justify-center rounded-lg">
+                      <Award className="w-4 h-4 text-gray-500"/>
+                    </div>
+                    <p className="text-xs font-light text-gray-600">Expert Tested</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="w-8 h-8 mx-auto bg-white border border-gray-200 flex items-center justify-center rounded-lg">
+                      <ShieldCheck className="w-4 h-4 text-gray-500"/>
+                    </div>
+                    <p className="text-xs font-light text-gray-600">Quality Guaranteed</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="w-8 h-8 mx-auto bg-white border border-gray-200 flex items-center justify-center rounded-lg">
+                      <HeartHandshake className="w-4 h-4 text-gray-500"/>
+                    </div>
+                    <p className="text-xs font-light text-gray-600">30-Day Returns</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Details Tabs */}
+              <div className="mt-8 border-t border-gray-100 pt-8">
+                <Tabs defaultValue="description">
+                  <TabsList className="inline-flex h-12 items-center justify-start rounded-xl bg-gray-50 p-1 text-gray-500 w-full overflow-x-auto">
+                    <TabsTrigger 
+                      value="description" 
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm hover:bg-white/50 hover:text-gray-700 flex-shrink-0"
+                    >
+                      Description
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="specs"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm hover:bg-white/50 hover:text-gray-700 flex-shrink-0"
+                    >
+                      Specs
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="warranty"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm hover:bg-white/50 hover:text-gray-700 flex-shrink-0"
+                    >
+                      Warranty
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="reviews" 
+                      id="reviews"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm hover:bg-white/50 hover:text-gray-700 flex-shrink-0"
+                    >
+                      Reviews
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="description" className="mt-8 focus:outline-none">
+                    <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Description</h3>
+                      <div className="text-gray-700 leading-relaxed space-y-3">
+                        <p>{product.longDescription}</p>
+                      </div>
+                      
+                      <div className="border-t border-gray-100 pt-6 mt-6">
+                        <h4 className="font-semibold text-gray-900 mb-3">What's in the box?</h4>
+                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                            <span>{product.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                            <span>Charger & Cable</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                            <span>Battery</span>
+                          </div>
+                <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                            <span>User Manual (Digital)</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="specs" className="mt-8 focus:outline-none">
+                    <div className="bg-white rounded-xl border border-gray-100 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Technical Specifications</h3>
+                      <div className="space-y-3">
+                        {product.specs.map((spec, index) => (
+                          <div key={spec.key} className={`flex items-center justify-between py-3 ${index !== product.specs.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                            <span className="font-medium text-gray-700">{spec.key}</span>
+                            <span className="text-gray-600 text-right max-w-[60%]">{spec.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="warranty" className="mt-8 focus:outline-none">
+                    <div className="bg-white rounded-xl border border-gray-100 p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Our Quality Promise</h3>
+                      <div className="space-y-4">
+                        <p className="text-gray-700 leading-relaxed">
+                          This product is covered by our <strong className="text-gray-900">{product.warranty}</strong>. We stand by the quality of our refurbished products. If you encounter any issues with your camera that are not related to accidental damage, we'll repair or replace it free of charge.
+                        </p>
+                        
+                        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                          <h4 className="font-medium text-gray-900 mb-3">Quality Assurance Process:</h4>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">Full 52-point inspection</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">Professional cleaning & calibration</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">Guaranteed functionality testing</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="reviews" className="mt-8 focus:outline-none">
+                    <div className="bg-white rounded-xl border border-gray-100 p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900">Customer Reviews</h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <StarRating rating={product.rating} starClassName="w-4 h-4" />
+                          <span className="font-medium">{product.rating}</span>
+                          <span>({product.reviewCount} reviews)</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {product.reviews.map((review, index) => (
+                          <div key={review.id} className={`pb-4 ${index !== product.reviews.length - 1 ? 'border-b border-gray-50' : ''}`}>
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h4 className="font-medium text-gray-900 text-sm">{review.author}</h4>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <StarRating rating={review.rating} starClassName="w-3 h-3" />
+                                  <span className="text-xs text-gray-500">{review.date}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
           </div>
 
-          <div className="mt-12 lg:mt-16">
-            <Tabs defaultValue="description">
-              <TabsList className="grid w-full grid-cols-2 md:w-[400px] md:grid-cols-4">
-                <TabsTrigger value="description">Description</TabsTrigger>
-                <TabsTrigger value="specs">Specs</TabsTrigger>
-                <TabsTrigger value="warranty">Warranty</TabsTrigger>
-                <TabsTrigger value="reviews" id="reviews">Reviews</TabsTrigger>
-              </TabsList>
-              <TabsContent value="description" className="mt-6 text-base leading-relaxed prose max-w-none">
-                <p>{product.longDescription}</p>
-                <h4 className="font-bold mt-4">What's in the box?</h4>
-                <ul>
-                    <li>{product.name}</li>
-                    <li>Charger & Cable</li>
-                    <li>Battery</li>
-                    <li>User Manual (Digital)</li>
-                </ul>
-              </TabsContent>
-              <TabsContent value="specs" className="mt-6">
-                <Card>
-                  <Table>
-                    <TableBody>
-                      {product.specs.map((spec) => (
-                        <TableRow key={spec.key}>
-                          <TableCell className="font-semibold">{spec.key}</TableCell>
-                          <TableCell>{spec.value}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </Card>
-              </TabsContent>
-              <TabsContent value="warranty" className="mt-6 text-base leading-relaxed prose max-w-none">
-                 <h3>Our Quality Promise</h3>
-                 <p>This product is covered by our <strong>{product.warranty}</strong>. We stand by the quality of our refurbished products. If you encounter any issues with your camera that are not related to accidental damage, we'll repair or replace it free of charge. Your peace of mind is our priority.</p>
-                 <ul>
-                    <li><CheckCircle className="inline-block mr-2 text-green-500"/> Full 52-point inspection</li>
-                    <li><CheckCircle className="inline-block mr-2 text-green-500"/> Professional cleaning</li>
-                    <li><CheckCircle className="inline-block mr-2 text-green-500"/> Guaranteed functionality</li>
-                 </ul>
-              </TabsContent>
-              <TabsContent value="reviews" className="mt-6">
-                <div className="space-y-6">
-                    {product.reviews.map(review => (
-                        <Card key={review.id}>
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-base font-medium">{review.author}</CardTitle>
-                                    <span className="text-sm text-muted-foreground">{review.date}</span>
-                                </div>
-                                <StarRating rating={review.rating} />
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">{review.comment}</p>
-                            </CardContent>
-                        </Card>
-                    ))}
+          {/* Subtle Sticky Add to Cart for Mobile/Tablet */}
+          <div className="lg:hidden">
+            <div className="fixed bottom-4 left-4 right-4 z-40 opacity-95">
+              <div className="bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-2xl p-3 shadow-lg">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm">
+                    <div className="font-semibold text-black">${product.price.toFixed(2)}</div>
+                    <div className="text-gray-500 text-xs truncate max-w-[120px]">{product.name}</div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    className="bg-black text-white hover:bg-gray-800 transition-all duration-300 px-6 h-10 text-sm font-medium rounded-xl" 
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Add to Cart
+                  </Button>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
+          </div>
+
+          {/* Subtle Sticky Add to Cart for Desktop */}
+          <div className="hidden lg:block">
+            <div className="fixed bottom-6 right-6 z-40">
+              <div className="group">
+                <Button 
+                  size="sm" 
+                  className="bg-black/90 text-white hover:bg-black transition-all duration-300 backdrop-blur-sm px-6 h-12 text-sm font-medium shadow-md hover:shadow-lg rounded-full border border-white/10" 
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Add to Cart • ${product.price.toFixed(2)}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+        {/* Social Proof & Trust Indicators */}
+        <div className="bg-gray-50 py-16 lg:py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold font-headline text-gray-900 mb-4">
+                Trusted by Thousands of Photographers
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Join over 25,000+ satisfied customers who chose QualiCams for their photography needs
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-black mb-2">25,000+</div>
+                <div className="text-gray-600 font-medium">Happy Customers</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-black mb-2">4.8/5</div>
+                <div className="text-gray-600 font-medium">Average Rating</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-black mb-2">15,000+</div>
+                <div className="text-gray-600 font-medium">Products Sold</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl lg:text-4xl font-bold text-black mb-2">99.2%</div>
+                <div className="text-gray-600 font-medium">Satisfaction Rate</div>
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-green-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Quality Guaranteed</h3>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Every camera undergoes our rigorous 52-point inspection process, ensuring you receive only the highest quality refurbished equipment.
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Truck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Free Shipping & Returns</h3>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Enjoy free insured shipping on all orders and hassle-free 30-day returns. Your satisfaction is our priority.
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Award className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Expert Support</h3>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Our photography experts are here to help. Get personalized advice and support from people who understand cameras.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Company Story & Mission */}
+        <div className="bg-white py-16 lg:py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl lg:text-4xl font-bold font-headline text-gray-900 mb-4">
+                  Why Choose QualiCams?
+                </h2>
+                <p className="text-lg text-gray-600">
+                  We're not just another camera store. We're passionate photographers who understand what you need.
+                </p>
+              </div>
+              
+              <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    At QualiCams, we believe that high-quality photography equipment shouldn't break the bank. That's why we specialize in premium refurbished cameras that deliver professional results at a fraction of the cost.
+                  </p>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    Every day, we receive fresh inventory of carefully selected cameras from professional photographers, studios, and authorized dealers. Each camera is meticulously inspected, cleaned, and tested by our expert technicians.
+                  </p>
+                  <div className="flex items-center gap-2 text-green-600 font-medium">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Founded by photographers, for photographers</span>
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Recycle className="w-4 h-4 text-green-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">Sustainable Choice</h4>
+                        <p className="text-sm text-gray-600">Extend the life of premium equipment while reducing electronic waste</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Award className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">Expert Curation</h4>
+                        <p className="text-sm text-gray-600">Only the best cameras make it through our selection process</p>
+                      </div>
+                  </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <HeartHandshake className="w-4 h-4 text-purple-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">Personal Service</h4>
+                        <p className="text-sm text-gray-600">Real photographers providing real advice and support</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Testimonials */}
+        <div className="bg-gray-50 py-16 lg:py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold font-headline text-gray-900 mb-4">
+                What Our Customers Say
+              </h2>
+              <p className="text-lg text-gray-600">
+                Don't just take our word for it - hear from photographers who trust QualiCams
+              </p>
+            </div>
+            
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-4 h-4 text-yellow-400 fill-current">★</div>
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  "I was skeptical about buying refurbished, but my Canon EOS R5 from QualiCams looks and performs like new. The inspection report gave me complete confidence in my purchase."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-600">MK</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Marcus Klein</div>
+                    <div className="text-sm text-gray-500">Wedding Photographer</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-4 h-4 text-yellow-400 fill-current">★</div>
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  "Amazing service! My Sony A7 IV arrived perfectly packaged with all accessories. The 6-month warranty gave me peace of mind. Will definitely buy again!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-600">SJ</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Sarah Johnson</div>
+                    <div className="text-sm text-gray-500">Travel Photographer</div>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="w-4 h-4 text-yellow-400 fill-current">★</div>
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 leading-relaxed">
+                  "Best decision I made for my photography business. Saved thousands on professional equipment without compromising on quality. The support team is incredibly knowledgeable."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-gray-600">DR</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">David Rodriguez</div>
+                    <div className="text-sm text-gray-500">Portrait Photographer</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Refurbished Benefits */}
+        <div className="bg-white py-16 lg:py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl lg:text-4xl font-bold font-headline text-gray-900 mb-4">
+                  The QualiCams Refurbished Advantage
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Discover why refurbished cameras from QualiCams are the smart choice for photographers
+                </p>
+              </div>
+              
+              <div className="grid lg:grid-cols-2 gap-12 mb-16">
+                <div className="space-y-8">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">52-Point Quality Inspection</h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        This {product.brand} {product.category.toLowerCase()} undergoes our comprehensive inspection process covering sensor cleanliness, autofocus accuracy, exposure systems, mechanical components, and all {product.category.toLowerCase()}-specific functions.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Package className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Like-New Condition</h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        This {product.brand} {product.name} has been professionally cleaned, calibrated, and restored to optimal working condition. Every function has been tested to ensure professional-grade performance.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <ShieldCheck className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{product.warranty}</h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        This {product.brand} {product.category.toLowerCase()} comes with our comprehensive {product.warranty.toLowerCase()} covering parts and labor. We stand behind every product we sell.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 rounded-xl p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">Save Big, Shoot Better</h3>
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">{product.name} (New)</span>
+                      <span className="font-semibold text-gray-900">${(product.price * 1.2).toFixed(0)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">{product.name} (QualiCams)</span>
+                      <span className="font-semibold text-green-600">${product.price.toFixed(0)}</span>
+                    </div>
+                    <div className="border-t border-gray-200 pt-4">
+                      <div className="flex items-center justify-between text-lg font-bold">
+                        <span className="text-gray-900">You Save</span>
+                        <span className="text-green-600">${((product.price * 1.2) - product.price).toFixed(0)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-green-700 font-medium mb-2">
+                      <CheckCircle className="w-5 h-5" />
+                      <span>Same Professional Results</span>
+                    </div>
+                    <p className="text-sm text-green-600">
+                      Get the same image quality and performance from this {product.brand} {product.category.toLowerCase()} at a fraction of the retail cost
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Help & Support */}
+        <div className="bg-gray-50 py-16 lg:py-20">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl lg:text-4xl font-bold font-headline text-gray-900 mb-4">
+                Need Help? We're Here for You
+              </h2>
+              <p className="text-lg text-gray-600 mb-12">
+                Our photography experts are ready to help you find the perfect camera
+              </p>
+              
+              <div className="grid md:grid-cols-3 gap-8 mb-12">
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Smartphone className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Call Us</h3>
+                  <p className="text-gray-600 text-sm mb-3">Speak directly with our camera experts</p>
+                  <a href="tel:1-800-QUALICAMS" className="text-blue-600 font-medium hover:text-blue-700">
+                    1-800-QUALICAMS
+                  </a>
+                </div>
+                
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Headphones className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Live Chat</h3>
+                  <p className="text-gray-600 text-sm mb-3">Get instant answers to your questions</p>
+                  <button className="text-green-600 font-medium hover:text-green-700">
+                    Start Chat
+                  </button>
+                     </div>
+                
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Video className="w-6 h-6 text-purple-600" />
+                     </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Video Call</h3>
+                  <p className="text-gray-600 text-sm mb-3">See the camera before you buy</p>
+                  <button className="text-purple-600 font-medium hover:text-purple-700">
+                    Schedule Call
+                  </button>
+                     </div>
+                     </div>
+              
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <HeartHandshake className="w-5 h-5 text-gray-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">Still Not Sure?</h3>
+                </div>
+                <p className="text-gray-600 mb-6">
+                  Email us at <a href="mailto:info@qualicams.com" className="text-blue-600 hover:text-blue-700 font-medium">info@qualicams.com</a> and we'll help you find the perfect camera for your needs and budget.
+                </p>
+                <div className="text-sm text-gray-500">
+                  Average response time: Under 2 hours during business hours
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Security & Trust Badges */}
+        <div className="bg-white py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Shop with Confidence</h3>
+                <p className="text-gray-600">Your security and satisfaction are our top priorities</p>
+              </div>
+              
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <ShieldCheck className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h4 className="font-medium text-gray-900 mb-1">SSL Secured</h4>
+                  <p className="text-sm text-gray-500">256-bit encryption</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Lock className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h4 className="font-medium text-gray-900 mb-1">Secure Payments</h4>
+                  <p className="text-sm text-gray-500">Stripe protected</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Truck className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h4 className="font-medium text-gray-900 mb-1">Insured Shipping</h4>
+                  <p className="text-sm text-gray-500">Full coverage</p>
+          </div>
+
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <HeartHandshake className="w-8 h-8 text-orange-600" />
+                                </div>
+                  <h4 className="font-medium text-gray-900 mb-1">30-Day Returns</h4>
+                  <p className="text-sm text-gray-500">No questions asked</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
+      
+      {/* Spacer for mobile sticky button */}
+      <div className="lg:hidden h-20"></div>
+      
       <Footer />
     </>
   );
 }
+
+    
 
     

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ProductCard } from '@/components/product-card';
-import { products as allProducts } from '@/lib/mock-data';
+import { getAllProducts, getProductsByBrand, getProductsByCategory } from '@/lib/firebase-products';
 import type { Product } from '@/lib/types';
 import {
   Select,
@@ -21,15 +21,18 @@ import { Button } from '@/components/ui/button';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, Filter, ChevronDown } from 'lucide-react';
 
-const allCategories = [...new Set(allProducts.map(p => p.category))];
-const allBrands = [...new Set(allProducts.map(p => p.brand))];
 const allConditions = ['Excellent', 'Good', 'Fair'];
 
 function ProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [allBrands, setAllBrands] = useState<string[]>([]);
   
   const [filters, setFilters] = useState({
     categories: searchParams.getAll('category') || [],
@@ -41,6 +44,30 @@ function ProductsPageContent() {
     ] as [number, number],
   });
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'featured');
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Load products from Firebase
+  useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const products = await getAllProducts();
+        setAllProducts(products);
+        
+        // Extract unique categories and brands
+        const categories = [...new Set(products.map(p => p.category))];
+        const brands = [...new Set(products.map(p => p.brand))];
+        setAllCategories(categories);
+        setAllBrands(brands);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProducts();
+  }, []);
   
   // This effect synchronizes the component's state with the URL's search parameters.
   // This is important for handling browser back/forward navigation and direct URL loads.
@@ -165,7 +192,7 @@ function ProductsPageContent() {
     }
 
     return filtered;
-  }, [searchParams]);
+  }, [allProducts, searchParams]);
   
   const currentSearchQuery = searchParams.get('q');
   
@@ -178,31 +205,46 @@ function ProductsPageContent() {
     <>
       <Header />
       <main className="flex-grow">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold font-headline">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-headline tracking-tight">
             {currentSearchQuery ? `Search Results for "${currentSearchQuery}"` : "All Products" }
           </h1>
-          <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-             {currentSearchQuery ? `We found ${filteredAndSortedProducts.length} items for you!` : `Browse our full collection of professionally refurbished cameras. Each one comes with our seal of approval and a warranty to give you peace of mind.`}
+          <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-2xl mx-auto px-4">
+             {currentSearchQuery ? `We found ${filteredAndSortedProducts.length} items for you!` : `Fresh refurbished cameras arrive daily. Premium quality at unbeatable prices with guaranteed performance.`}
           </p>
         </div>
         
-        <div className="grid md:grid-cols-4 gap-8">
-          <aside className="md:col-span-1">
-             <Card>
-               <CardContent className="p-4 space-y-6">
+        <div className="lg:grid lg:grid-cols-4 lg:gap-8 space-y-6 lg:space-y-0">
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden mb-4">
+            <Button 
+              className="w-full justify-between bg-white border-2 border-black text-black hover:bg-black hover:text-white rounded-xl font-semibold" 
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <span className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filters & Sort
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
+
+          <aside className={`lg:col-span-1 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+            <Card className="rounded-xl">
+              <CardContent className="p-4 lg:p-6 space-y-4 lg:space-y-6">
                  <div>
-                    <h3 className="font-semibold mb-4 text-sm">Category</h3>
-                    <div className="space-y-2">
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-gray-800">Category</h3>
+                    <div className="space-y-2.5">
                       {allCategories.map(category => (
-                          <div key={category} className="flex items-center space-x-2">
+                          <div key={category} className="flex items-center space-x-3">
                               <Checkbox 
                                   id={`cat-${category}`} 
                                   checked={filters.categories.includes(category)}
                                   onCheckedChange={(checked) => handleFilterChange('categories', category, !!checked)}
+                                  className="w-4 h-4"
                               />
-                              <Label htmlFor={`cat-${category}`} className="font-normal capitalize text-sm">{category}</Label>
+                              <Label htmlFor={`cat-${category}`} className="font-normal capitalize text-sm cursor-pointer">{category}</Label>
                           </div>
                       ))}
                     </div>
@@ -211,16 +253,17 @@ function ProductsPageContent() {
                   <Separator />
 
                   <div>
-                    <h3 className="font-semibold mb-4 text-sm">Brand</h3>
-                    <div className="space-y-2">
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-gray-800">Brand</h3>
+                    <div className="space-y-2.5">
                       {allBrands.map(brand => (
-                          <div key={brand} className="flex items-center space-x-2">
+                          <div key={brand} className="flex items-center space-x-3">
                               <Checkbox 
                                   id={`brand-${brand}`}
                                   checked={filters.brands.includes(brand)}
                                   onCheckedChange={(checked) => handleFilterChange('brands', brand, !!checked)}
+                                  className="w-4 h-4"
                               />
-                              <Label htmlFor={`brand-${brand}`} className="font-normal text-sm">{brand}</Label>
+                              <Label htmlFor={`brand-${brand}`} className="font-normal text-sm cursor-pointer">{brand}</Label>
                           </div>
                       ))}
                     </div>
@@ -229,70 +272,92 @@ function ProductsPageContent() {
                   <Separator />
                   
                   <div>
-                      <h3 className="font-semibold mb-4 text-sm">Price Range</h3>
-                      <Slider
-                          value={filters.priceRange}
-                          max={3000}
-                          step={100}
-                          onValueChange={handlePriceChange}
-                      />
-                      <div className="flex justify-between text-sm text-muted-foreground mt-2">
-                          <span>${filters.priceRange[0]}</span>
-                          <span>${filters.priceRange[1]}</span>
+                      <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-gray-800">Price Range</h3>
+                      <div className="px-2">
+                        <Slider
+                            value={filters.priceRange}
+                            max={3000}
+                            step={100}
+                            onValueChange={handlePriceChange}
+                            className="mb-3"
+                        />
+                        <div className="flex justify-between text-sm font-medium text-gray-600">
+                            <span>${filters.priceRange[0]}</span>
+                            <span>${filters.priceRange[1]}</span>
+                        </div>
                       </div>
                   </div>
 
                   <Separator />
 
-                   <div>
-                    <h3 className="font-semibold mb-4 text-sm">Condition</h3>
-                    <div className="space-y-2">
+                                      <div>
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wide text-gray-800">Condition</h3>
+                    <div className="space-y-2.5">
                       {allConditions.map(condition => (
-                          <div key={condition} className="flex items-center space-x-2">
+                          <div key={condition} className="flex items-center space-x-3">
                               <Checkbox 
-                                  id={`cond-${condition}`} 
+                                  id={`cond-${condition}`}
                                   checked={filters.conditions.includes(condition)}
                                   onCheckedChange={(checked) => handleFilterChange('conditions', condition, !!checked)}
+                                  className="w-4 h-4"
                               />
-                              <Label htmlFor={`cond-${condition}`} className="font-normal text-sm">{condition}</Label>
+                              <Label htmlFor={`cond-${condition}`} className="font-normal text-sm cursor-pointer">{condition}</Label>
                           </div>
                       ))}
                     </div>
                   </div>
-                  <Separator/>
-                   <div className="flex flex-col gap-2">
-                       <Button onClick={applyFilters} className="w-full">Apply Filters</Button>
-                       <Button variant="ghost" onClick={clearFilters} className="w-full">Clear All Filters</Button>
+                  
+                  <Separator className="my-4"/>
+                  
+                   <div className="flex flex-col gap-3">
+                     <Button onClick={applyFilters} className="w-full bg-black text-white hover:bg-gray-900 font-semibold rounded-xl h-10 text-sm">APPLY FILTERS</Button>
+                     <Button onClick={clearFilters} className="w-full bg-white text-black border-2 border-black hover:bg-black hover:text-white font-semibold rounded-xl h-10 text-sm">CLEAR ALL FILTERS</Button>
                    </div>
                </CardContent>
              </Card>
           </aside>
 
-          <main className="md:col-span-3">
-              <div className="flex justify-between items-center mb-6">
-                  <p className="text-sm text-muted-foreground">{filteredAndSortedProducts.length} products found</p>
-                  <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="featured">Featured</SelectItem>
-                      <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                      <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                      <SelectItem value="rating-desc">Highest Rated</SelectItem>
-                    </SelectContent>
-                  </Select>
+          <main className="lg:col-span-3">
+              {/* Mobile Sort & Results Bar */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 bg-gray-50 p-4 rounded-xl lg:bg-transparent lg:p-0">
+                  <p className="text-sm text-gray-600 font-medium">{filteredAndSortedProducts.length} products found</p>
+                  
+                  <div className="flex items-center gap-3">
+                    <Select value={sortBy} onValueChange={handleSortChange}>
+                      <SelectTrigger className="w-full sm:w-[180px] bg-white border-2 border-black text-black hover:bg-gray-50 rounded-xl h-10 font-medium">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="featured">Featured</SelectItem>
+                        <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                        <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                        <SelectItem value="rating-desc">Highest Rated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Mobile Clear Filters */}
+                    <Button 
+                      onClick={clearFilters} 
+                      className="bg-white text-black border-2 border-black hover:bg-black hover:text-white font-semibold text-sm lg:hidden rounded-xl px-4 h-10"
+                    >
+                      CLEAR
+                    </Button>
+                  </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {filteredAndSortedProducts.length > 0 ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-8">
+                {loading ? (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground">Loading products...</p>
+                  </div>
+                ) : filteredAndSortedProducts.length > 0 ? (
                   filteredAndSortedProducts.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))
                 ) : (
                   <div className="col-span-full text-center py-12">
-                      <p className="text-muted-foreground">No products match your filters.</p>
-                      <Button variant="link" onClick={clearFilters}>Clear filters</Button>
+                      <p className="text-muted-foreground mb-4">No products match your filters.</p>
+                      <Button onClick={clearFilters} className="bg-white text-black border-2 border-black hover:bg-black hover:text-white font-semibold rounded-xl px-6">CLEAR FILTERS</Button>
                   </div>
                 )}
               </div>
