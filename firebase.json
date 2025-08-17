@@ -11,7 +11,7 @@
     "runtime": "nodejs20"
   },
   "hosting": {
-    "public": ".next/static",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -19,13 +19,17 @@
     ],
     "rewrites": [
       {
+        "source": "/_next/static/**",
+        "destination": "/_next/static/**"
+      },
+      {
         "source": "**",
         "function": "nextjsFunc"
       }
     ],
     "headers": [
       {
-        "source": "**/*.@(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)",
+        "source": "/_next/static/**",
         "headers": [
           {
             "key": "Cache-Control",

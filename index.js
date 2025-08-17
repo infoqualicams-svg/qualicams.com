@@ -1,5 +1,7 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const next = require('next');
+const path = require('path');
+const { parse } = require('url');
 
 const isDev = process.env.NODE_ENV !== 'production';
 const nextjsServer = next({ 
@@ -18,6 +20,15 @@ exports.nextjsFunc = onRequest(
     maxInstances: 10,
   },
   async (req, res) => {
+    const parsedUrl = parse(req.url, true);
+    
+    // Handle Next.js static files
+    if (parsedUrl.pathname.startsWith('/_next/static/')) {
+      // Let Firebase Hosting handle static files
+      res.status(404).end();
+      return;
+    }
+    
     return nextjsServer.prepare().then(() => nextjsHandle(req, res));
   }
 );
