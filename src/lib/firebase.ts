@@ -3,10 +3,9 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyArtvMvtscWbyzwoMEAX1bdOFbkwZmR8XA",
   authDomain: "qualicams.firebaseapp.com",
@@ -29,7 +28,11 @@ export const storage = getStorage(app);
 // Initialize Firebase Authentication
 export const auth = getAuth(app);
 
-// Initialize Analytics (only in browser environment)
-export const analytics = typeof window !== 'undefined' && isSupported() ? getAnalytics(app) : null;
+// Initialize Analytics (only in browser)
+let analytics;
+if (typeof window !== 'undefined') {
+  analytics = getAnalytics(app);
+}
+export { analytics };
 
 export default app;

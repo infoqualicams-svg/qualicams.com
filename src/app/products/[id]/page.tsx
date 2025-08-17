@@ -24,6 +24,19 @@ import { PaymentIcons } from '@/components/ui/payment-icons';
 
 
 
+// Generate static params for all products
+export async function generateStaticParams() {
+  try {
+    const products = await getAllProducts();
+    return products.map((product) => ({
+      id: product.id,
+    }));
+  } catch (error) {
+    console.error('Error generating static params:', error);
+    return [];
+  }
+}
+
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { addItem } = useCart();
   const [product, setProduct] = React.useState<Product | null>(null);
